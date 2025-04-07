@@ -43,7 +43,7 @@ CREATE TABLE user_allergens (
     FOREIGN KEY (allergen_id) REFERENCES allergens(id) ON DELETE CASCADE
 );
 
--- 식품 테이블 -> 식품에서 바코를 따로 빼서 API에 맞게 따로 테이블
+-- 식품 테이블
 CREATE TABLE foods (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -107,7 +107,7 @@ CREATE TABLE qr_links (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_food FOREIGN KEY (food_id) REFERENCES foods(id) ON DELETE CASCADE,
     CONSTRAINT fk_bundle FOREIGN KEY (bundle_id) REFERENCES food_bundles(id) ON DELETE CASCADE,
-    CONSTRAINT fk_supplier FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE CASCADE,
+    CONSTRAINT fk_supplier FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE CASCADE
 );
 
 -- 식품 바코드 테이블
@@ -154,7 +154,7 @@ CREATE TABLE favorites (
 CREATE TABLE ocr_results (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
-    input_food_name VARCHAR(255),,
+    input_food_name VARCHAR(255),
     suggested_food_name VARCHAR(255),
     uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
