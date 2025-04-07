@@ -1,7 +1,7 @@
 #qr 혹은 바코드 처리 진입점
 import json
-from barcode_router import get_product_by_barcode
-from qrcode_router import get_product_by_qrcode
+from qr_barcode_module.barcode_router import get_product_by_barcode
+from qr_barcode_module.qrcode_router import get_product_by_qrcode
 
 no_food_error_message = {"error": "해당 코드는 등록된 상품이 없습니다", "code" : "PRODUCT_NOT_FOUND"}
 type_error_message = {"error": "유효하지 않은 요청 타입입니다. 'barcode' 또는 'qrcode'를 입력해주세요.", "code" : "INVALID_CODE_TYPE"}
