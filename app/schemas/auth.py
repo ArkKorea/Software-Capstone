@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr
+from datetime import date
 
 class LoginRequest(BaseModel):
     email: EmailStr
@@ -11,3 +12,12 @@ class UserOut(BaseModel):
 class LoginResponse(BaseModel):
     access_token: str
     user: UserOut
+
+class RegisterRequest(BaseModel):
+    email: EmailStr
+    password: str
+    birthdate: date
+    agree_personal_info: bool
+
+class RegisterResponse(BaseModel):
+    message: str
