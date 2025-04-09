@@ -2,7 +2,7 @@ import flet as ft
 
 def splash_content(page: ft.Page):
     logo = ft.Image(
-        src="https://raw.githubusercontent.com/rlaeogus117/Temp/main/login_image.png",
+        src="https://raw.githubusercontent.com/ArkKorea/Software-Capstone/main/flet_code/login_image.png",
         width=300,
         height=300
     )
@@ -22,7 +22,7 @@ def splash_content(page: ft.Page):
 
 def login_screen(page: ft.Page):
     logo = ft.Image(
-        src="https://raw.githubusercontent.com/rlaeogus117/Temp/main/login_image.png",
+        src="https://raw.githubusercontent.com/ArkKorea/Software-Capstone/main/flet_code/login_image.png",
         width=300,
         height=300
     )
