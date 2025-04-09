@@ -37,7 +37,14 @@
 ## 🗒️참고 및 출처
 
 ## ⚙️버전 정보
-
+  + Git : 2.45.x
+  + Python : 3.11.x
+  + FastAPI : 0.110.x
+  + Uvicorn : 0.27.x
+  + SQLAlchemy : 2.0.x
+  + Pydantic : 2.4.x
+  + PyMySQL : 1.1.x
+  + MySQL : 8.0.36
 
 
 
