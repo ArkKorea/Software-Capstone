@@ -47,33 +47,19 @@ CREATE TABLE user_allergens (
 CREATE TABLE foods (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
+    ingredient TEXT,
     image_url VARCHAR(255), -- 이미지 URL (선택)
     supplier_id INT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE CASCADE
 );
 
--- 성분 테이블
-CREATE TABLE ingredients (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) UNIQUE NOT NULL
-);
-
--- 식품-성분 매핑 테이블
-CREATE TABLE food_ingredients (
+-- 음식-알러지 매핑 테이블
+CREATE TABLE food_allergens (
     food_id INT,
-    ingredient_id INT,
-    PRIMARY KEY (food_id, ingredient_id),
-    FOREIGN KEY (food_id) REFERENCES foods(id) ON DELETE CASCADE,
-    FOREIGN KEY (ingredient_id) REFERENCES ingredients(id) ON DELETE CASCADE
-);
-
--- 성분-알러지 매핑 테이블
-CREATE TABLE ingredient_allergens (
-    ingredient_id INT,
     allergen_id INT,
-    PRIMARY KEY (ingredient_id, allergen_id),
-    FOREIGN KEY (ingredient_id) REFERENCES ingredients(id) ON DELETE CASCADE,
+    PRIMARY KEY (food_id, allergen_id),
+    FOREIGN KEY (food_id) REFERENCES foods(id) ON DELETE CASCADE,
     FOREIGN KEY (allergen_id) REFERENCES allergens(id) ON DELETE CASCADE
 );
 
@@ -113,8 +99,8 @@ CREATE TABLE qr_links (
 -- 식품 바코드 테이블
 CREATE TABLE barcodes(
     id INT AUTO_INCREMENT PRIMARY KEY,
-    code VARCHAR(64) UNIQUE NOT NULL,
     food_id INT NOT NULL,
+    code VARCHAR(255) UNIQUE NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (food_id) REFERENCES foods(id) ON DELETE CASCADE
 );
