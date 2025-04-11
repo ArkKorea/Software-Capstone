@@ -15,6 +15,7 @@ CREATE TABLE users (
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255),
     name VARCHAR(100),
+    gender ENUM('male', 'female') NOT NULL,
     birth DATE NOT NULL, -- 생년월일 입력 형식을 'xxxx-xx-xx'로 하거나 STR_TO_DATE('20010402', '%Y%m%d')로 하거나 선택.
     role ENUM('consumer', 'supplier', 'admin') NOT NULL,
     supplier_id INT DEFAULT NULL,                -- 공급자 ID (소비자일 경우 NULL)
@@ -129,11 +130,16 @@ CREATE TABLE symptoms_log (
 
 -- 즐겨찾기 테이블
 CREATE TABLE favorites (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
+    type ENUM('food', 'bundle', 'supplier') NOT NULL,
     food_id INT,
-    PRIMARY KEY (user_id, food_id),
+    bundle_id INT,
+    supplier_id INT,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (food_id) REFERENCES foods(id) ON DELETE CASCADE
+    FOREIGN KEY (food_id) REFERENCES foods(id) ON DELETE CASCADE,
+    FOREIGN KEY (bundle_id) REFERENCES food_bundles(id) ON DELETE CASCADE,
+    FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE CASCADE
 );
 
 -- OCR 결과 저장 테이블
