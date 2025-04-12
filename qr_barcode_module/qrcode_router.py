@@ -23,19 +23,27 @@ def get_product_by_qrcode(input_json_data, user_email):
             food_id = result["food_id"]
             product_data = get_food_detail_by_id(cursor, food_id, user_email)
             return json.dumps({"products" : [product_data]}, ensure_ascii=False)
+        
         elif qr_type == "bundle":
-            """구성 상품만"""
             bundle_id = result["bundle_id"]
+            cursor.execute("SELECT id,name,image_url,supplier_id FROM food_bundles WHERE id = %s", (bundle_id,))
+            bundle = cursor.fetchone()
+
             cursor.execute("SELECT food_id FROM food_bundle_items WHERE bundle_id = %s", (bundle_id,))
             food_ids = cursor.fetchall()['food_id']
             products = []
             for food_id in food_ids:
                 product_data = get_food_detail_by_id(cursor, food_id, user_email)
                 products.append(product_data)
-            return json.dumps({"products" : products}, ensure_ascii=False)
+            return json.dumps({"supplier": {"id" : bundle_id,
+                                            "name" : bundle["name"],
+                                            "image_url" : bundle["image_url"],
+                                            "supplier_id" : bundle["supplier_id"]} ,
+                               "products" : products}, ensure_ascii=False)
+        
         else:
             #/supplier/{supplier_id}로 라우팅 할 수 있도록 하기기
             supplier_id = result["supplier_id"]
-            return
+            return 
     except Exception as e:
         return json.dumps(server_error_message, ensure_ascii=False)
