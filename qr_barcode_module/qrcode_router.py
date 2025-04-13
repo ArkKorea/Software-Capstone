@@ -42,8 +42,11 @@ def get_product_by_qrcode(input_json_data, user_email):
                                "products" : products}, ensure_ascii=False)
         
         else:
-            #/supplier/{supplier_id}로 라우팅 할 수 있도록 하기기
+            #/supplier/{supplier_id}로 라우팅
             supplier_id = result["supplier_id"]
-            return 
+            return json.dumps({
+                                "type": "supplier_redirect",
+                                "redirect_to": f"/supplier/{supplier_id}"
+                            }, ensure_ascii=False)
     except Exception as e:
         return json.dumps(server_error_message, ensure_ascii=False)
