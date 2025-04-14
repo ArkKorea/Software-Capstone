@@ -1,13 +1,42 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from app.crud.user import get_user_by_email, create_user
-from app.core.security import verify_password, create_access_token
-from app.schemas.auth import LoginRequest, LoginResponse, UserOut
-from app.schemas.auth import RegisterRequest, RegisterResponse
-from app.core.security import hash_password
+from datetime import datetime
 import uuid
 
+# 보안
+from app.core.security import (
+    verify_password, 
+    create_access_token, 
+    hash_password
+)
+
+# 설정
 from app.core.config import settings  # SECRET_KEY 가져오기
+
+# CRUD
+from app.crud.user import (
+    get_user_by_email,
+    create_user,
+    get_user_by_verification_token,
+    verify_user_email,
+    set_reset_token,
+    get_user_by_reset_token,
+    update_user_password
+)
+
+# 스키마
+from app.schemas.auth import (
+    LoginRequest,
+    LoginResponse,
+    UserOut,
+    RegisterRequest,
+    RegisterResponse,
+    EmailVerificationResponse,
+    ResetPasswordRequest,
+    ResetPasswordConfirm,
+    MessageResponse
+)
+
 
 def login_user(request: LoginRequest, db: Session):
     user = get_user_by_email(db, request.email)
@@ -52,3 +81,49 @@ def register_user(request: RegisterRequest, db: Session) -> RegisterResponse:
 
     # 추후 이메일 발송 추가 예정
     return RegisterResponse(message="이메일 인증 링크가 발송되었습니다.")
+
+def verify_user(token: str, db: Session) -> EmailVerificationResponse:
+    user = get_user_by_verification_token(db, token)
+    
+    if not user:
+        raise HTTPException(status_code=400, detail="토큰이 유효하지 않거나 만료되었습니다.", headers={"X-Error-Code": "INVALID_OR_EXPIRED_TOKEN"})
+    
+    if user.is_verified:
+        raise HTTPException(status_code=409, detail="이메일이 이미 인증되었습니다.", headers={"X-Error-Code": "ALREADY_VERIFIED"})
+    
+    verify_user_email(db, user)
+
+    return EmailVerificationResponse(message="이메일 인증이 완료되었습니다.")
+
+# 재설정 요청 처리
+def request_password_reset(request: ResetPasswordRequest, db: Session) -> MessageResponse:
+    user = get_user_by_email(db, request.email)
+    if not user or not user.is_verified:
+        # 인증된 계정만 비밀번호 재설정 가능
+        raise HTTPException(status_code=404, detail="해당 이메일로 가입된 계정을 찾을 수 없습니다.")
+
+    token = str(uuid.uuid4())
+    set_reset_token(db, user, token)
+
+    # 실제 배포 전까진 이메일 대신 콘솔에 링크 출력
+    print(f"비밀번호 재설정 링크: http://localhost:8000/api/auth/reset-password?token={token}")
+
+    return MessageResponse(message="비밀번호 재설정 링크가 발송되었습니다.")
+
+# 비밀번호 재설정 처리리
+def reset_password(request: ResetPasswordConfirm, db: Session) -> MessageResponse:
+    user = get_user_by_reset_token(db, request.token)
+    if not user:
+        raise HTTPException(status_code=400, detail="토큰이 유효하지 않거나 만료되었습니다.")
+
+    # 만료 시간 검증 (UTC 기준)
+    if user.reset_password_expires_at and user.reset_password_expires_at < datetime.utcnow():
+        raise HTTPException(status_code=400, detail="토큰이 만료되었습니다.")
+
+    if len(request.new_password) < 8:
+        raise HTTPException(status_code=400, detail="비밀번호는 8자 이상이어야 합니다.")
+
+    hashed_pw = hash_password(request.new_password)
+    update_user_password(db, user, hashed_pw)
+
+    return MessageResponse(message="비밀번호가 성공적으로 변경되었습니다.")

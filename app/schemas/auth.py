@@ -21,3 +21,17 @@ class RegisterRequest(BaseModel):
 
 class RegisterResponse(BaseModel):
     message: str
+
+class EmailVerificationResponse(BaseModel):
+    message: str
+    
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordConfirm(BaseModel):
+    token: str
+    new_password: str
+
+class MessageResponse(BaseModel):
+    message: str
