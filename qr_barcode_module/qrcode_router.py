@@ -35,7 +35,7 @@ def get_product_by_qrcode(input_json_data, user_email):
             for food_id in food_ids:
                 product_data = get_food_detail_by_id(cursor, food_id, user_email)
                 products.append(product_data)
-            return json.dumps({"supplier": {"id" : bundle_id,
+            return json.dumps({"bundle": {  "id" : bundle_id,
                                             "name" : bundle["name"],
                                             "image_url" : bundle["image_url"],
                                             "supplier_id" : bundle["supplier_id"]} ,
