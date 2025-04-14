@@ -50,6 +50,7 @@ CREATE TABLE foods (
     name VARCHAR(255) NOT NULL,
     ingredient TEXT,
     image_url VARCHAR(255), -- 이미지 URL (선택)
+    source_type ENUM('user','ocr','crowl'),
     supplier_id INT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE CASCADE
