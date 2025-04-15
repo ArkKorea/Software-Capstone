@@ -9,6 +9,8 @@ from terms_3 import terms_3_screen
 from email_verification_sent import email_verification_sent_screen
 from email_verified import email_verified_screen
 from home import home_screen
+from profile_view import profile_screen  # ✅ 수정 후
+
 
 async def main(page: ft.Page):
     page.title = "ALLERT SIGN"
@@ -43,6 +45,8 @@ async def main(page: ft.Page):
             page.views.append(email_verified_screen(page, email))
         elif route == "/home":
             page.views.append(home_screen(page))
+        elif route == "/profile":
+            page.views.append(profile_screen(page))
 
         page.update()
 

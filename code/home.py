@@ -1,3 +1,4 @@
+# home.py (변경된 전체 코드)
 import flet as ft
 
 def home_screen(page: ft.Page):
@@ -6,7 +7,6 @@ def home_screen(page: ft.Page):
         controls=[
             ft.Column(
                 controls=[
-                    # 상단 여백 + 로고 & 아이콘들 (알림 + 전체메뉴)
                     ft.Container(
                         content=ft.Row([
                             ft.Image(
@@ -24,7 +24,6 @@ def home_screen(page: ft.Page):
                         padding=ft.Padding(top=40, left=10, right=10, bottom=10)
                     ),
 
-                    # 프로필 & 환영 문구
                     ft.Container(
                         content=ft.Row([
                             ft.CircleAvatar(
@@ -42,7 +41,6 @@ def home_screen(page: ft.Page):
 
                     ft.Container(height=10),
 
-                    # 검색창
                     ft.Container(
                         padding=ft.Padding(top=5, left=10, right=10, bottom=5),
                         content=ft.TextField(
@@ -57,7 +55,6 @@ def home_screen(page: ft.Page):
 
                     ft.Container(height=10),
 
-                    # 광고 이미지
                     ft.Container(
                         content=ft.Image(
                             src="https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_adbanner.png",
@@ -69,7 +66,6 @@ def home_screen(page: ft.Page):
 
                     ft.Container(height=20),
 
-                    # 카테고리 제목
                     ft.Container(
                         padding=ft.Padding(top=0, left=10, right=10, bottom=0),
                         content=ft.Text("카테고리", size=16, weight=ft.FontWeight.BOLD)
@@ -77,7 +73,6 @@ def home_screen(page: ft.Page):
 
                     ft.Container(height=10),
 
-                    # 가로 스크롤 가능한 카테고리 버튼들
                     ft.Container(
                         height=110,
                         padding=ft.Padding(left=10, right=10, top=0, bottom=0),
@@ -96,13 +91,12 @@ def home_screen(page: ft.Page):
                         )
                     ),
 
-                    ft.Container(height=70)  # 바텀 네비게이션 공간 확보용
+                    ft.Container(height=70)
                 ],
                 expand=True,
                 scroll=ft.ScrollMode.AUTO
             ),
 
-            # 하단 바텀 네비게이션 바
             ft.Container(
                 bgcolor=ft.Colors.WHITE,
                 padding=ft.Padding(top=8, bottom=8, left=8, right=8),
@@ -110,10 +104,9 @@ def home_screen(page: ft.Page):
                     alignment=ft.MainAxisAlignment.SPACE_AROUND,
                     vertical_alignment=ft.CrossAxisAlignment.CENTER,
                     controls=[
-                        nav_icon(ft.Icons.HOME, "Home", selected=True),
-                        nav_icon(ft.Icons.SEARCH, "Search"),
+                        nav_icon(ft.Icons.HOME, "Home", page, "/home", selected=True),
+                        nav_icon(ft.Icons.SEARCH, "Search", page, "/search"),
 
-                        # 가운데 QR 버튼 (조금 위로 이동)
                         ft.Container(
                             content=ft.FloatingActionButton(
                                 icon=ft.Icons.QR_CODE_SCANNER,
@@ -125,8 +118,8 @@ def home_screen(page: ft.Page):
                             margin=ft.margin.only(top=-10)
                         ),
 
-                        nav_icon(ft.Icons.HISTORY, "History"),
-                        nav_icon(ft.Icons.PERSON_OUTLINE, "Profile")
+                        nav_icon(ft.Icons.HISTORY, "History", page, "/history"),
+                        nav_icon(ft.Icons.PERSON_OUTLINE, "Profile", page, "/profile")
                     ]
                 ),
                 border_radius=ft.border_radius.only(top_left=20, top_right=20),
@@ -135,7 +128,6 @@ def home_screen(page: ft.Page):
         ]
     )
 
-# 카테고리 버튼
 def category_button(label, image_url):
     return ft.Container(
         width=90,
@@ -154,14 +146,16 @@ def category_button(label, image_url):
         )
     )
 
-# 하단 아이콘 + 텍스트 조합
-def nav_icon(icon, label, selected=False):
+def nav_icon(icon, label, page, route, selected=False):
     color = ft.Colors.GREEN if selected else ft.Colors.BLUE_GREY
-    return ft.Column(
-        [
-            ft.Icon(icon, color=color, size=20),
-            ft.Text(label, size=11, color=color)
-        ],
-        alignment=ft.MainAxisAlignment.CENTER,
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER
+    return ft.GestureDetector(
+        on_tap=lambda e: page.go(route),
+        content=ft.Column(
+            [
+                ft.Icon(icon, color=color, size=20),
+                ft.Text(label, size=11, color=color)
+            ],
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER
+        )
     )
