@@ -1,5 +1,6 @@
-# home.py (변경된 전체 코드)
+# home.py
 import flet as ft
+from nav_bar import nav_bar
 
 def home_screen(page: ft.Page):
     return ft.View(
@@ -80,7 +81,7 @@ def home_screen(page: ft.Page):
                             controls=[
                                 category_button("QR 코드", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_category_qr.png"),
                                 category_button("OCR 인식", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_category_ocr.png"),
-                                category_button("내 상품 관리", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_category_myitems.png"),
+                                category_button("내 상품 관리", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_category_myitems.png", "/productmanagement"),
                                 category_button("내 식단 관리", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_category_mydiet.png"),
                                 category_button("즐겨찾기", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_category_favorites.png"),
                                 category_button("내 알레르기", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_category_myallergy.png"),
@@ -97,65 +98,27 @@ def home_screen(page: ft.Page):
                 scroll=ft.ScrollMode.AUTO
             ),
 
-            ft.Container(
-                bgcolor=ft.Colors.WHITE,
-                padding=ft.Padding(top=8, bottom=8, left=8, right=8),
-                content=ft.Row(
-                    alignment=ft.MainAxisAlignment.SPACE_AROUND,
-                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                    controls=[
-                        nav_icon(ft.Icons.HOME, "Home", page, "/home", selected=True),
-                        nav_icon(ft.Icons.SEARCH, "Search", page, "/search"),
-
-                        ft.Container(
-                            content=ft.FloatingActionButton(
-                                icon=ft.Icons.QR_CODE_SCANNER,
-                                bgcolor=ft.Colors.GREEN,
-                                mini=True,
-                                height=40,
-                                width=40
-                            ),
-                            margin=ft.margin.only(top=-10)
-                        ),
-
-                        nav_icon(ft.Icons.HISTORY, "History", page, "/history"),
-                        nav_icon(ft.Icons.PERSON_OUTLINE, "Profile", page, "/profile")
-                    ]
-                ),
-                border_radius=ft.border_radius.only(top_left=20, top_right=20),
-                height=65
-            )
+            nav_bar(page, current_route="/home")
         ]
     )
 
-def category_button(label, image_url):
-    return ft.Container(
-        width=90,
-        height=90,
-        bgcolor=ft.Colors.GREEN_400,
-        border_radius=10,
-        alignment=ft.alignment.center,
-        content=ft.Column(
-            [
-                ft.Image(src=image_url, width=36, height=36),
-                ft.Text(label, size=12, color=ft.Colors.WHITE, text_align=ft.TextAlign.CENTER)
-            ],
-            alignment=ft.MainAxisAlignment.CENTER,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-            spacing=5
-        )
-    )
-
-def nav_icon(icon, label, page, route, selected=False):
-    color = ft.Colors.GREEN if selected else ft.Colors.BLUE_GREY
+def category_button(label, image_url, route="/home"):
     return ft.GestureDetector(
-        on_tap=lambda e: page.go(route),
-        content=ft.Column(
-            [
-                ft.Icon(icon, color=color, size=20),
-                ft.Text(label, size=11, color=color)
-            ],
-            alignment=ft.MainAxisAlignment.CENTER,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER
+        on_tap=lambda e: e.page.go(route),
+        content=ft.Container(
+            width=90,
+            height=90,
+            bgcolor=ft.Colors.GREEN_400,
+            border_radius=10,
+            alignment=ft.alignment.center,
+            content=ft.Column(
+                [
+                    ft.Image(src=image_url, width=36, height=36),
+                    ft.Text(label, size=12, color=ft.Colors.WHITE, text_align=ft.TextAlign.CENTER)
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                spacing=5
+            )
         )
     )
