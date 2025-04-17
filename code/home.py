@@ -84,7 +84,7 @@ def home_screen(page: ft.Page):
                                 category_button("내 상품 관리", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_category_myitems.png", "/productmanagement"),
                                 category_button("내 식단 관리", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_category_mydiet.png", "/dietmanagement"),
                                 category_button("즐겨찾기", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_category_favorites.png", "/favorites"),
-                                category_button("내 알레르기", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_category_myallergy.png"),
+                                category_button("내 알레르기", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_category_myallergy.png", "/myallergy"),
                             ],
                             spacing=10,
                             scroll=ft.ScrollMode.ALWAYS,
