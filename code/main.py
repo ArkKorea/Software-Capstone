@@ -10,7 +10,9 @@ from email_verification_sent import email_verification_sent_screen
 from email_verified import email_verified_screen
 from home import home_screen
 from profile_view import profile_screen
-from productmanagement import product_management_screen  # ✅ 추가
+from productmanagement import product_management_screen
+from dietmanagement import diet_management_screen  # ✅ 추가
+from favorites import favorites_screen
 
 async def main(page: ft.Page):
     page.title = "ALLERT SIGN"
@@ -47,8 +49,12 @@ async def main(page: ft.Page):
             page.views.append(home_screen(page))
         elif route == "/profile":
             page.views.append(profile_screen(page))
-        elif route == "/productmanagement":  # ✅ 추가
+        elif route == "/productmanagement":
             page.views.append(product_management_screen(page))
+        elif route == "/dietmanagement":  # ✅ 추가
+            page.views.append(diet_management_screen(page))
+        elif route == "/favorites":  # ✅ 즐겨찾기 페이지
+            page.views.append(favorites_screen(page))
 
         page.update()
 
