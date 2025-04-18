@@ -24,8 +24,8 @@ def my_allergy_screen(page: ft.Page):
                     ft.Container(
                         content=ft.Image(
                             src=f"https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image//home/myallergy/{image_id}.png",
-                            width=42,  # 이미지 크기 크게!
-                            height=42,
+                            width=35,  # 이미지 크기 크게!
+                            height=35,
                             fit=ft.ImageFit.FILL
                         ),
                         alignment=ft.alignment.center_left
