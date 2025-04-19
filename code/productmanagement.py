@@ -51,7 +51,8 @@ def product_management_screen(page: ft.Page):
                                         "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/productmanagement/home_productmanagement_add.png",
                                         "상품 등록하기",
                                         width_ratio=0.95,
-                                        height_multiplier=1.2
+                                        height_multiplier=1.2,
+                                        on_click=lambda e: page.go("/productregister")
                                     ),
 
                                     ft.Container(height=10),
@@ -65,7 +66,8 @@ def product_management_screen(page: ft.Page):
                                                 "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/productmanagement/home_productmanagement_list.png",
                                                 "내 상품 목록",
                                                 width_ratio=0.45,
-                                                height_multiplier=1.2
+                                                height_multiplier=1.2,
+                                                on_click=lambda e: page.go("/myproductlist")
                                             ),
                                             product_card(
                                                 "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/productmanagement/home_productmanagement_group.png",
@@ -94,7 +96,7 @@ def product_management_screen(page: ft.Page):
     )
 
 
-def product_card(image_link, text, width_ratio=1.0, height_multiplier=1.0):
+def product_card(image_link, text, width_ratio=1.0, height_multiplier=1.0, on_click=None):
     card_height = 100 * height_multiplier
     card_width = 360 * width_ratio if width_ratio < 1.0 else None
     return ft.Container(
@@ -103,6 +105,7 @@ def product_card(image_link, text, width_ratio=1.0, height_multiplier=1.0):
         bgcolor=ft.Colors.GREEN,
         border_radius=15,
         padding=ft.Padding(20, 10, 20, 10),
+        on_click=on_click,
         content=ft.Column(
             controls=[
                 ft.Image(src=image_link, width=50, height=50),

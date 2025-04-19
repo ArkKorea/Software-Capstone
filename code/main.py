@@ -14,6 +14,8 @@ from productmanagement import product_management_screen
 from dietmanagement import diet_management_screen 
 from favorites import favorites_screen
 from myallergy import my_allergy_screen  
+from productregister import product_register_screen
+from myproductlist import my_product_list_screen
 
 async def main(page: ft.Page):
     page.title = "ALLERT SIGN"
@@ -58,6 +60,10 @@ async def main(page: ft.Page):
             page.views.append(favorites_screen(page))
         elif route == "/myallergy": 
             page.views.append(my_allergy_screen(page))
+        elif route == "/productregister": 
+            page.views.append(product_register_screen(page))
+        elif route == "/myproductlist": 
+            page.views.append(my_product_list_screen(page))
 
         page.update()
 
