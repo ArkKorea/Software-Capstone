@@ -57,3 +57,7 @@ def update_user_password(db: Session, user: User, new_password_hash: str):
     user.reset_password_expires_at = None
     db.commit()
     db.refresh(user)
+
+# id로 유저 찾기
+def get_user_by_id(db: Session, user_id: int) -> User | None:
+    return db.query(User).filter(User.id == user_id).first()
