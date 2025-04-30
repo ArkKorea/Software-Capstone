@@ -6,12 +6,16 @@ def email_verification_sent_screen(page: ft.Page, email: str):
         page.go("/signup")
 
     return ft.View(
-        "/email_verification_sent",
+        "/emailverificationsent",
         controls=[
             ft.AppBar(
-                title=ft.Text("회원가입"),
-                leading=ft.IconButton(icon=ft.icons.ARROW_BACK, on_click=go_back),
-                bgcolor=ft.Colors.WHITE
+                title=ft.Text("인 증 메 일 발 송", size=22, weight=ft.FontWeight.BOLD),
+                center_title=True,
+                bgcolor=ft.Colors.WHITE,
+                leading=ft.IconButton(
+                    icon=ft.Icons.ARROW_BACK,
+                    on_click=lambda _: page.go("/signup")
+                )
             ),
             ft.Container(
                 padding=20,

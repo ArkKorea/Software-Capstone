@@ -5,10 +5,11 @@ def terms_1_screen(page: ft.Page):
         page.go("/signup")
 
     return ft.View(
-        "/terms_1",
+        "/terms1",
         controls=[
             ft.AppBar(
-                title=ft.Text("이용약관"),
+                title=ft.Text("이 용 약 관", size=22, weight=ft.FontWeight.BOLD),
+                center_title=True,
                 leading=ft.IconButton(icon=ft.icons.ARROW_BACK, on_click=go_back),
                 bgcolor=ft.Colors.WHITE
             ),
