@@ -1,6 +1,9 @@
 from pydantic import BaseModel
 from enum import Enum
-from datetime import datetime
+from typing import List, Union
+from app.schemas.food import FoodOut
+from app.schemas.supplier import SupplierOut
+from app.schemas.food_bundle import FoodBundleOut
 
 class FavoriteType(str, Enum):
     food = "food"
@@ -14,7 +17,6 @@ class FavoriteActionRequest(BaseModel):
 
 class FavoriteOut(BaseModel):
     target_id: int
-    created_at: datetime
 
 class FavoriteListResponse(BaseModel):
-    items: list[FavoriteOut]
+    items: List[Union[FoodOut, SupplierOut, FoodBundleOut]]

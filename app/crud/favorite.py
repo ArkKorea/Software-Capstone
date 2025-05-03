@@ -8,7 +8,6 @@ def add_favorite(db: Session, user_id: int, target_type: FavoriteType, target_id
         user_id=user_id,
         type=target_type,
         target_id=target_id,
-        created_at=datetime.utcnow()
     )
     db.add(favorite)
     db.commit()
@@ -35,4 +34,12 @@ def get_favorites_by_type(db: Session, user_id: int, target_type: FavoriteType) 
     return db.query(Favorite).filter(
         Favorite.user_id == user_id,
         Favorite.type == target_type
-    ).order_by(Favorite.created_at.desc()).all()
+    ).order_by(Favorite.id.desc())
+
+# 중복 검사사
+def get_favorite_by_type_and_target(db: Session, user_id: int, target_type: FavoriteType, target_id: int) -> Favorite | None:
+    return db.query(Favorite).filter(
+        Favorite.user_id == user_id,
+        Favorite.type == target_type,
+        Favorite.target_id == target_id
+    ).first()

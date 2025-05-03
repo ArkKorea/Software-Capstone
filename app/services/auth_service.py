@@ -110,13 +110,13 @@ def request_password_reset(request: ResetPasswordRequest, db: Session) -> Messag
 
     return MessageResponse(message="비밀번호 재설정 링크가 발송되었습니다.")
 
-# 비밀번호 재설정 처리리
+# 비밀번호 재설정
 def reset_password(request: ResetPasswordConfirm, db: Session) -> MessageResponse:
     user = get_user_by_reset_token(db, request.token)
     if not user:
         raise HTTPException(status_code=400, detail="토큰이 유효하지 않거나 만료되었습니다.")
 
-    # 만료 시간 검증 (UTC 기준)
+    # 만료 시간 검증
     if user.reset_password_expires_at and user.reset_password_expires_at < datetime.utcnow():
         raise HTTPException(status_code=400, detail="토큰이 만료되었습니다.")
 

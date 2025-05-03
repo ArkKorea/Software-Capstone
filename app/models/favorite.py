@@ -12,8 +12,7 @@ class FavoriteType(str, enum.Enum):
 class Favorite(Base):
     __tablename__ = "favorites"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
-    type: Mapped[FavoriteType] = mapped_column(Enum(FavoriteType), nullable=False)
-    target_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    type: Mapped[FavoriteType]  # 'food' | 'bundle' | 'supplier'
+    target_id: Mapped[int]
