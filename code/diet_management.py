@@ -1,9 +1,9 @@
 import flet as ft
 from datetime import date, timedelta
 import calendar
+from urllib.parse import urlparse, parse_qs
 from nav_bar import nav_bar
-from day_diet import day_diet_screen  # 상세 식단 뷰 import
-
+from day_diet import day_diet_screen
 
 def generate_full_calendar(month: int, year: int):
     first_day_of_month = date(year, month, 1)
@@ -11,7 +11,6 @@ def generate_full_calendar(month: int, year: int):
     start_date = first_day_of_month - timedelta(days=first_weekday)
     total_cells = 6 * 7
     return [start_date + timedelta(days=i) for i in range(total_cells)]
-
 
 def diet_management_screen(page: ft.Page):
     today = date.today()
@@ -42,8 +41,8 @@ def diet_management_screen(page: ft.Page):
     )
 
     def on_day_clicked(selected: date):
-        bottom_sheet = day_diet_screen(page, selected)
-        page.overlay.append(bottom_sheet)
+        page.overlay.clear()  # ✅ BottomSheet 중복 방지
+        page.overlay.append(day_diet_screen(page, selected))
         page.update()
 
     def update_calendar():
@@ -53,8 +52,7 @@ def diet_management_screen(page: ft.Page):
 
         for week_index in range(6):
             week_days = calendar_days[week_index * 7:(week_index + 1) * 7]
-            
-            # 6번째 주일 때, 해당 달 날짜가 하나도 없으면 출력하지 않음
+
             if week_index == 5 and not any(day.month == current_month.current for day in week_days):
                 continue
 
@@ -85,13 +83,12 @@ def diet_management_screen(page: ft.Page):
                         color=number_color if is_current_month else ft.colors.GREY
                     )
 
-                # 날짜 클릭 시 상세 뷰 열기
                 day_container = ft.Container(
                     width=48,
                     height=60,
                     alignment=ft.alignment.center,
                     content=content,
-                    on_click=lambda e, d=date_obj: on_day_clicked(d)  # 날짜 캡처 주의
+                    on_click=lambda e, d=date_obj: on_day_clicked(d)
                 )
 
                 row.controls.append(day_container)
@@ -114,6 +111,20 @@ def diet_management_screen(page: ft.Page):
             current_month.current += 1
         update_calendar()
         page.update()
+
+    # ✅ URL에서 ?date=2025-xx-xx 쿼리 있으면 팝업 자동 띄우기
+    qs = parse_qs(urlparse(page.route).query)
+    date_str = qs.get("date", [None])[0]
+    from_str = qs.get("from", [None])[0]
+
+    if date_str and from_str != "symptom":
+        try:
+            selected_date = date.fromisoformat(date_str)
+            page.overlay.clear()
+            page.overlay.append(day_diet_screen(page, selected_date))
+        except ValueError:
+            pass
+
 
     update_calendar()
 
@@ -151,7 +162,7 @@ def diet_management_screen(page: ft.Page):
                                 color=ft.colors.WHITE,
                                 padding=ft.Padding(20, 10, 20, 10)
                             ),
-                            on_click=lambda e: print("식단 추가 클릭됨!")
+                            on_click=lambda e: page.go(f"/adddiet?from=management&date={today.isoformat()}")
                         ),
                         padding=20,
                         alignment=ft.alignment.center

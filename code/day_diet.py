@@ -1,3 +1,5 @@
+# day_diet.py
+
 import flet as ft
 from datetime import date
 
@@ -14,26 +16,21 @@ def day_diet_screen(page: ft.Page, selected_date: date):
     date_str = selected_date.strftime("%Y-%m-%d")
     meals = sample_data.get(date_str, [])
 
-    # 날짜 텍스트
+    # 날짜 표시
     date_display = ft.Column([
-        ft.Text(
-            selected_date.strftime("%d"),
-            size=32,
-            weight=ft.FontWeight.BOLD
-        ),
-        ft.Text(
-            selected_date.strftime("%A").upper(),
-            size=14,
-            color=ft.Colors.GREY,
-        ),
-        ft.Text(
-            selected_date.strftime("%B %Y"),
-            size=14,
-            color=ft.Colors.GREY,
-        )
+        ft.Text(selected_date.strftime("%d"), size=32, weight=ft.FontWeight.BOLD),
+        ft.Text(selected_date.strftime("%A").upper(), size=14, color=ft.Colors.GREY),
+        ft.Text(selected_date.strftime("%B %Y"), size=14, color=ft.Colors.GREY),
     ], alignment=ft.MainAxisAlignment.CENTER)
 
-    # 식단 카드 또는 '등록된 식단이 없습니다.' 메시지 생성
+    # 오늘의 증상으로 이동
+    def on_today_symptom(e):
+        # 1) 기존 BottomSheet 닫기
+        page.overlay.clear()
+        # 2) 선택 날짜를 쿼리로 넘겨서 내비게이트
+        page.go(f"/todaysymptom?date={selected_date.isoformat()}")
+
+    # 식단 리스트 또는 “없음” 메시지
     meal_list_controls = (
         [
             ft.Row(
@@ -48,10 +45,7 @@ def day_diet_screen(page: ft.Page, selected_date: date):
                             bgcolor=ft.Colors.GREY_100,
                             border_radius=10,
                             content=ft.Column(
-                                controls=[
-                                    ft.Text(meal, size=14)
-                                    for meal in entry["meals"]
-                                ]
+                                controls=[ft.Text(m, size=14) for m in entry["meals"]]
                             )
                         )
                     ),
@@ -88,12 +82,12 @@ def day_diet_screen(page: ft.Page, selected_date: date):
                                     padding=ft.Padding(12, 6, 12, 6),
                                     shape=ft.RoundedRectangleBorder(radius=10)
                                 ),
-                                on_click=lambda e: page.go("/todaysymptom")  # 페이지 이동
+                                on_click=on_today_symptom
                             )
                         ]
                     ),
                     ft.Divider(height=20, thickness=1),
-                    # 헤더: Time | 식단 기록 + 추가하기 버튼
+                    # 헤더
                     ft.Row(
                         alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                         controls=[
@@ -112,15 +106,13 @@ def day_diet_screen(page: ft.Page, selected_date: date):
                                     padding=ft.Padding(16, 8, 16, 8),
                                     shape=ft.RoundedRectangleBorder(radius=10)
                                 ),
-                                on_click=lambda e: print("식단 추가")
+                                on_click=lambda e: page.go("/adddiet")
                             )
                         ]
                     ),
                     ft.Divider(),
-
-                    # 식단 내용 표시
+                    # 식단 항목
                     *meal_list_controls,
-
                     ft.Container(height=20),
                 ],
                 scroll=ft.ScrollMode.AUTO

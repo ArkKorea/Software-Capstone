@@ -54,7 +54,7 @@ def favorites_screen(page: ft.Page):
                             controls=[
                                 ft.Container(
                                     alignment=ft.alignment.center,
-                                    content=ft.Text("즐 겨 찾 기", size=20),
+                                    content=ft.Text("즐 겨 찾 기", size=22, weight=ft.FontWeight.BOLD),
                                     expand=True,
                                 ),
                                 ft.Container(
