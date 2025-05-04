@@ -3,7 +3,7 @@ import json
 import pymysql, pymysql.cursors
 from qr_barcode_module.db import get_db_connection
 from qr_barcode_module.food_utils import get_food_detail_by_id
-from qr_barcode_module.error_messages import no_food_error_message, server_error_message
+from app.services.error_messages import no_food_error_message, server_error_message
 
 def get_product_by_qrcode(input_json_data, user_email):
     try:

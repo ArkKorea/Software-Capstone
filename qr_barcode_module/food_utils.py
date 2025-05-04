@@ -1,5 +1,5 @@
 import json
-from qr_barcode_module.error_messages import server_error_message
+from app.services.error_messages import server_error_message
 
 def get_food_detail_by_id(cursor, food_id, user_email):
     try:
@@ -19,6 +19,7 @@ def get_food_detail_by_id(cursor, food_id, user_email):
         # 사용자가 food를 즐겨찾기를 했는지
         cursor.execute("SELECT * FROM favorites WHERE user_id = %s AND food_id = %s", (user_id, food_id))
         is_favorite = True if cursor.fetchone() else False
+        
         # user_id로 사용자의 알러지 정보 가져옴
         cursor.execute("SELECT allergen_id FROM user_allergens WHERE user_id = %s", (user_id,))
         user_allergies = [row["allergen_id"] for row in cursor.fetchall()]

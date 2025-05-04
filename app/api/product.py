@@ -1,10 +1,13 @@
 #qr 혹은 바코드 처리 진입점
 import json
-from qr_barcode_module.barcode_router import get_product_by_barcode
-from qr_barcode_module.qrcode_router import get_product_by_qrcode
-from qr_barcode_module.error_messages import type_error_message, server_error_message
+from app.api.barcode_router import get_product_by_barcode
+from app.api.qrcode_router import get_product_by_qrcode
+from app.services.error_messages import type_error_message, server_error_message
+from fastapi import APIRouter, Depends
 
+router = APIRouter()
 
+@router.post("/from-code")
 def get_product_by_code(input_json_data, user_email):
     try:
         # JSON 데이터 파싱해 입력 코드의 종류 판별

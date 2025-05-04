@@ -2,13 +2,13 @@ import json
 import pymysql, pymysql.cursors
 from qr_barcode_module.db import get_db_connection
 from qr_barcode_module.food_utils import get_food_detail_by_id
-from qr_barcode_module.error_messages import no_food_error_message, server_error_message
+from app.services.error_messages import no_food_error_message, server_error_message
 
 def get_product_by_barcode(data, user_email):
     try:
         data_code = data.get('value')
         db_connect = get_db_connection()
-        # DictCursor로 결과의 값을 key(column)로 가져옴 -> 인덱스보다 명확히 알 수 있음음
+        # DictCursor로 결과의 값을 key(column)로 가져옴 -> 인덱스보다 명확히 알 수 있음
         cursor = db_connect.cursor(pymysql.cursors.DictCursor)
 
         # 바코드의 값으로 맞는 food_id가 존재하는지 확인
