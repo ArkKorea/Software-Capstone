@@ -1,3 +1,12 @@
+-- 동의 약관 테이블(new)
+CREATE TABLE terms_versions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    version VARCHAR(20) NOT NULL, -- 예: '1.0', '1.1'
+    content TEXT NOT NULL, -- 약관 원문 (필요 시 Markdown/HTML)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE -- 현재 유효한 버전 표시
+);
+
 -- 공급자 테이블
 CREATE TABLE suppliers (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -95,7 +104,7 @@ CREATE TABLE qr_links (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_food FOREIGN KEY (food_id) REFERENCES foods(id) ON DELETE CASCADE,
     CONSTRAINT fk_bundle FOREIGN KEY (bundle_id) REFERENCES food_bundles(id) ON DELETE CASCADE,
-    CONSTRAINT fk_supplier FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE CASCADE,
+    CONSTRAINT fk_supplier FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE CASCADE
 );
 
 -- 식품 바코드 테이블
@@ -147,7 +156,7 @@ CREATE TABLE favorites (
 CREATE TABLE ocr_results (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
-    input_food_name VARCHAR(255),,
+    input_food_name VARCHAR(255),
     suggested_food_name VARCHAR(255),
     uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -161,13 +170,4 @@ CREATE TABLE view_log (
     viewed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (food_id) REFERENCES foods(id) ON DELETE CASCADE
-);
-
--- 동의 약관 테이블(new)
-CREATE TABLE terms_versions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    version VARCHAR(20) NOT NULL, -- 예: '1.0', '1.1'
-    content TEXT NOT NULL, -- 약관 원문 (필요 시 Markdown/HTML)
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    is_active BOOLEAN DEFAULT TRUE -- 현재 유효한 버전 표시
 );
