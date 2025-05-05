@@ -1,10 +1,10 @@
 from app.crud.product import *
 from app.crud.user import get_user_by_email
+from app.schemas.product import ProductResponse, BundleResponse
+from app.models.models import Foods
 from fastapi import HTTPException
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
-from app.schemas.product import ProductResponse, BundleResponse
-from app.models.models import Foods, Users
 
 
 def decode_barcode(value: str, db: Session, user_email:str) -> ProductResponse:
@@ -23,7 +23,7 @@ def decode_qrcode(value: str, db: Session, user_email:str):
     elif data_type == 'bundle':
         bundle = get_bundle_by_qrcode(value, db)
         if not bundle:
-            raise HTTPException(status_code=404, detail="Bundle not found")
+            raise HTTPException(status_code=404, detail="Product not found")
         return BundleResponse(
             bundle_id=bundle.id,
             name=bundle.name,
