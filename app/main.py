@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from app.api import auth, product, search
 
-
 app = FastAPI()
 
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
