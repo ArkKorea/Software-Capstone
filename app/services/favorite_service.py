@@ -8,14 +8,8 @@ from app.crud.favorite import (
     get_favorite_by_type_and_target
 
 )
-from app.models.food import Food
-from app.models.food_bundle import FoodBundle
-from app.models.supplier import Supplier
 from app.schemas.favorite import FavoriteListResponse
-from app.schemas.food import FoodOut
-from app.schemas.food_bundle import FoodBundleOut
-from app.schemas.supplier import SupplierOut
-
+from app.crud.favorite import get_favorites_by_type, get_food_by_id, get_bundle_by_id, get_supplier_by_id
 from app.schemas.favorite import FavoriteActionRequest, FavoriteListResponse, FavoriteOut
 
 # 즐겨찾기 추가/삭제
@@ -45,16 +39,16 @@ def get_favorites(user_id: int, target_type: FavoriteType, db: Session) -> Favor
     items = []
     for fav in favorites:
         if target_type == FavoriteType.food:
-            food = db.query(Food).filter(Food.id == fav.target_id).first()
+            food = get_food_by_id(db, fav.target_id)
             if food:
-                items.append(FoodOut.model_validate(food))  # Pydantic 변환
+                items.append(FavoriteOut.model_validate(food))
         elif target_type == FavoriteType.bundle:
-            bundle = db.query(FoodBundle).filter(FoodBundle.id == fav.target_id).first()
+            bundle = get_bundle_by_id(db, fav.target_id)
             if bundle:
-                items.append(FoodBundleOut.model_validate(bundle))
+                items.append(FavoriteOut.model_validate(bundle))
         elif target_type == FavoriteType.supplier:
-            supplier = db.query(Supplier).filter(Supplier.id == fav.target_id).first()
+            supplier = get_supplier_by_id(db, fav.target_id)
             if supplier:
-                items.append(SupplierOut.model_validate(supplier))
+                items.append(FavoriteOut.model_validate(supplier))
 
     return FavoriteListResponse(items=items)
