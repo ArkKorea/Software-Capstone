@@ -1,5 +1,4 @@
 from typing import List, Optional
-
 from sqlalchemy import Column, Date, DateTime, Enum, ForeignKeyConstraint, Index, Integer, String, Table, Text, text
 from sqlalchemy.dialects.mysql import TINYINT
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -12,7 +11,7 @@ class Base(DeclarativeBase):
 class Allergens(Base):
     __tablename__ = 'allergens'
     __table_args__ = (
-        Index('name', 'name', unique=True),
+        Index('idx_name', 'name'),
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -57,7 +56,7 @@ class FoodBundles(Base):
     __tablename__ = 'food_bundles'
     __table_args__ = (
         ForeignKeyConstraint(['supplier_id'], ['suppliers.id'], ondelete='CASCADE', name='food_bundles_ibfk_1'),
-        Index('supplier_id', 'supplier_id')
+        Index('idx_supplier_id', 'supplier_id')
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -76,7 +75,7 @@ class Foods(Base):
     __tablename__ = 'foods'
     __table_args__ = (
         ForeignKeyConstraint(['supplier_id'], ['suppliers.id'], ondelete='CASCADE', name='foods_ibfk_1'),
-        Index('supplier_id', 'supplier_id')
+        Index('idx_supplier_id', 'supplier_id')
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -102,9 +101,9 @@ class Users(Base):
     __table_args__ = (
         ForeignKeyConstraint(['supplier_id'], ['suppliers.id'], ondelete='SET NULL', name='users_ibfk_1'),
         ForeignKeyConstraint(['terms_version_id'], ['terms_versions.id'], ondelete='SET NULL', name='users_ibfk_2'),
-        Index('email', 'email', unique=True),
-        Index('supplier_id', 'supplier_id'),
-        Index('terms_version_id', 'terms_version_id')
+        Index('idx_email', 'email'),
+        Index('idx_supplier_id', 'supplier_id'),
+        Index('idx_terms_version_id', 'terms_version_id')
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -136,8 +135,8 @@ class Barcodes(Base):
     __tablename__ = 'barcodes'
     __table_args__ = (
         ForeignKeyConstraint(['food_id'], ['foods.id'], ondelete='CASCADE', name='barcodes_ibfk_1'),
-        Index('code', 'code', unique=True),
-        Index('food_id', 'food_id')
+        Index('idx_code', 'code'),
+        Index('idx_food_id', 'food_id')
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -155,10 +154,10 @@ class Favorites(Base):
         ForeignKeyConstraint(['food_id'], ['foods.id'], ondelete='CASCADE', name='favorites_ibfk_2'),
         ForeignKeyConstraint(['supplier_id'], ['suppliers.id'], ondelete='CASCADE', name='favorites_ibfk_4'),
         ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE', name='favorites_ibfk_1'),
-        Index('bundle_id', 'bundle_id'),
-        Index('food_id', 'food_id'),
-        Index('supplier_id', 'supplier_id'),
-        Index('user_id', 'user_id')
+        Index('idx_bundle_id', 'bundle_id'),
+        Index('idx_food_id', 'food_id'),
+        Index('idx_supplier_id', 'supplier_id'),
+        Index('idx_user_id', 'user_id')
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -180,7 +179,7 @@ t_food_allergens = Table(
     Column('allergen_id', Integer, primary_key=True, nullable=False),
     ForeignKeyConstraint(['allergen_id'], ['allergens.id'], ondelete='CASCADE', name='food_allergens_ibfk_2'),
     ForeignKeyConstraint(['food_id'], ['foods.id'], ondelete='CASCADE', name='food_allergens_ibfk_1'),
-    Index('allergen_id', 'allergen_id')
+    Index('idx_allergen_id', 'allergen_id')
 )
 
 
@@ -190,7 +189,7 @@ t_food_bundle_items = Table(
     Column('food_id', Integer, primary_key=True, nullable=False),
     ForeignKeyConstraint(['bundle_id'], ['food_bundles.id'], ondelete='CASCADE', name='food_bundle_items_ibfk_1'),
     ForeignKeyConstraint(['food_id'], ['foods.id'], ondelete='CASCADE', name='food_bundle_items_ibfk_2'),
-    Index('food_id', 'food_id')
+    Index('idx_food_id', 'food_id')
 )
 
 
@@ -199,8 +198,8 @@ class IntakeLog(Base):
     __table_args__ = (
         ForeignKeyConstraint(['food_id'], ['foods.id'], ondelete='SET NULL', name='intake_log_ibfk_2'),
         ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE', name='intake_log_ibfk_1'),
-        Index('food_id', 'food_id'),
-        Index('user_id', 'user_id')
+        Index('idx_food_id', 'food_id'),
+        Index('idx_user_id', 'user_id')
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -218,7 +217,7 @@ class OcrResults(Base):
     __tablename__ = 'ocr_results'
     __table_args__ = (
         ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE', name='ocr_results_ibfk_1'),
-        Index('user_id', 'user_id')
+        Index('idx_user_id', 'user_id')
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -236,7 +235,7 @@ class QrLinks(Base):
         ForeignKeyConstraint(['bundle_id'], ['food_bundles.id'], ondelete='CASCADE', name='fk_bundle'),
         ForeignKeyConstraint(['food_id'], ['foods.id'], ondelete='CASCADE', name='fk_food'),
         ForeignKeyConstraint(['supplier_id'], ['suppliers.id'], ondelete='CASCADE', name='fk_supplier'),
-        Index('code', 'code', unique=True),
+        Index('idx_code', 'code'),
         Index('fk_bundle', 'bundle_id'),
         Index('fk_food', 'food_id'),
         Index('fk_supplier', 'supplier_id')
@@ -259,7 +258,7 @@ class SymptomsLog(Base):
     __tablename__ = 'symptoms_log'
     __table_args__ = (
         ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE', name='symptoms_log_ibfk_1'),
-        Index('user_id', 'user_id')
+        Index('idx_user_id', 'user_id')
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -277,7 +276,7 @@ t_user_allergens = Table(
     Column('allergen_id', Integer, primary_key=True, nullable=False),
     ForeignKeyConstraint(['allergen_id'], ['allergens.id'], ondelete='CASCADE', name='user_allergens_ibfk_2'),
     ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE', name='user_allergens_ibfk_1'),
-    Index('allergen_id', 'allergen_id')
+    Index('idx_allergen_id', 'allergen_id')
 )
 
 
@@ -286,8 +285,8 @@ class ViewLog(Base):
     __table_args__ = (
         ForeignKeyConstraint(['food_id'], ['foods.id'], ondelete='CASCADE', name='view_log_ibfk_2'),
         ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE', name='view_log_ibfk_1'),
-        Index('food_id', 'food_id'),
-        Index('user_id', 'user_id')
+        Index('idx_food_id', 'food_id'),
+        Index('idx_user_id', 'user_id')
     )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
