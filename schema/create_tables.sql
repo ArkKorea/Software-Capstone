@@ -12,6 +12,7 @@ CREATE TABLE suppliers (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     contact_email VARCHAR(255),
+    address VARCHAR(255),
     business_license_number VARCHAR(100),       -- 사업자 번호 (선택)
     is_verified BOOLEAN DEFAULT FALSE,           -- 인증 여부
     image_url VARCHAR(255),                -- 공급자 이미지 URL (선택)
