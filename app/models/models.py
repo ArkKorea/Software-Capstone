@@ -28,6 +28,7 @@ class Suppliers(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(255))
     contact_email: Mapped[Optional[str]] = mapped_column(String(255))
+    address: Mapped[Optional[str]] = mapped_column(String(255))
     business_license_number: Mapped[Optional[str]] = mapped_column(String(100))
     is_verified: Mapped[Optional[int]] = mapped_column(TINYINT(1), server_default=text("'0'"))
     image_url: Mapped[Optional[str]] = mapped_column(String(255))
