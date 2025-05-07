@@ -1,0 +1,20 @@
+#qr 혹은 바코드 처리 진입점
+from typing import Union
+from app.schemas.product import ProductResponse, ProductRequest, BundleResponse
+from app.services.product_service import decode_barcode, decode_qrcode
+from app.db.database import get_db
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+router = APIRouter()
+
+@router.post("/from-code", response_model=Union[ProductResponse, BundleResponse])
+def code_scanner(request: ProductRequest, db: Session = Depends(get_db)):
+    code_type = request.type
+    if code_type == "barcode":
+        return decode_barcode(request.value, db)
+    elif code_type == "qrcode":
+        return decode_qrcode(request.value, db)
+    else:
+        raise HTTPException(status_code=400,
+                            detail="유효하지 않은 요청 타입입니다. 'barcode' 또는 'qrcode'를 입력해주세요.")
