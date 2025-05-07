@@ -9,8 +9,8 @@ class ProductResponse(BaseModel):
     product_id:int
     name:str
     image_url:str
-    allergen_hit:list[int]
-    allergen_safe:list[int]
+    allergen_hit:list[str]
+    allergen_safe:list[str]
     ingredient:str
     is_favorite:bool
     supplier_id:int

@@ -18,15 +18,3 @@ def code_scanner(request: ProductRequest, db: Session = Depends(get_db)):
     else:
         raise HTTPException(status_code=400,
                             detail="유효하지 않은 요청 타입입니다. 'barcode' 또는 'qrcode'를 입력해주세요.")
-    
-    """
-    # JSON 데이터 파싱해 입력 코드의 종류 판별
-    data = json.loads(input_json_data)
-    data_type = data.get('type')
-    
-    # 각 코드에 맞는 함수 실행
-    if data_type == 'barcode':
-        return get_product_by_barcode(data, user_email)
-    elif data_type == 'qrcode':
-        return get_product_by_qrcode(data, user_email)
-    """
