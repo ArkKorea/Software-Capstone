@@ -6,6 +6,7 @@ from typing import List
 
 from app.models.base import Base
 
+from app.models.food_bundle import FoodBundle
 from app.models.food_bundle_item import FoodBundleItem
 from app.models.barcode import Barcode
 from app.models.qr_link import QrLink
@@ -30,8 +31,9 @@ class Food(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     supplier: Mapped['Supplier'] = relationship("Supplier", back_populates="foods")
-    bundles: Mapped[List['FoodBundleItem']] = relationship("FoodBundleItem", back_populates="food")
+    bundles: Mapped[List['FoodBundle']] = relationship("FoodBundle", back_populates="food")
     barcode: Mapped['Barcode'] = relationship('Barcode', back_populates='food')
     qr_link: Mapped['QrLink'] = relationship('QrLink', back_populates='food')
     allergen: Mapped[List['Allergen']] = relationship('Allergen', back_populates='food')
     favorites: Mapped[List['Favorite']] = relationship('Favorites', back_populates='food')
+    food_bundle_item: Mapped[List['FoodBundleItem']] = relationship('FoodBundleItem', back_populates='food')

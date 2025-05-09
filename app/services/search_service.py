@@ -5,8 +5,6 @@ from fastapi import HTTPException, Depends
 from app.crud.search import *
 from .product_service import build_product_response
 from app.models.user import User
-from app.models.food import Food
-from app.models.food_bundle import FoodBundle
 from app.core.auth import get_current_user
 
 
