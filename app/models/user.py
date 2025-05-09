@@ -6,6 +6,7 @@ import enum
 from app.models.base import Base
 from app.models.allergen import Allergen
 from app.models.favorite import Favorite
+from .user_allergen import user_allergens
 
 class RoleEnum(enum.Enum):
     consumer = "consumer"
@@ -31,5 +32,5 @@ class User(Base):
     reset_password_token: Mapped[str | None] = mapped_column(String(255), nullable=True)
     reset_password_expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    allergen = relationship('Allergen', back_populates='user')
+    allergen = relationship('Allergen',secondary=user_allergens, back_populates='user')
     favorites = relationship('Favorite', back_populates='user')
