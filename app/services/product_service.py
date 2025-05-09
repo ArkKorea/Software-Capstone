@@ -30,7 +30,7 @@ def decode_qrcode(value: str, db: Session):
             name=bundle.name,
             image_url=bundle.image_url,
             product_list=[
-                build_product_response(f) for f in bundle.food
+                build_product_response(f) for f in bundle.items
             ]
         )
     elif data_type == 'supplier':

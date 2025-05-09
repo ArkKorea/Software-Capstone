@@ -7,7 +7,10 @@ from typing import List
 from app.models.base import Base
 
 from app.models.food_bundle_item import FoodBundleItem
-from app.models.models import Barcodes, QrLinks, Allergens, Favorites
+from app.models.barcode import Barcode
+from app.models.qr_link import QrLink
+from app.models.allergen import Allergen
+from app.models.favorite import Favorite
 from app.models.supplier import Supplier
 
 class SourceType(PyEnum):
@@ -27,8 +30,8 @@ class Food(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     supplier: Mapped['Supplier'] = relationship("Supplier", back_populates="foods")
-    bundles = relationship("FoodBundleItem", back_populates="food")
-    barcodes: Mapped['Barcodes'] = relationship('Barcodes', back_populates='food')
-    qr_links: Mapped['QrLinks'] = relationship('QrLinks', back_populates='food')
-    allergen: Mapped[List['Allergens']] = relationship('Allergens', secondary='food_allergens', back_populates='food')
-    favorites: Mapped[List['Favorites']] = relationship('Favorites', back_populates='food')
+    bundles: Mapped[List['FoodBundleItem']] = relationship("FoodBundleItem", back_populates="food")
+    barcode: Mapped['Barcode'] = relationship('Barcode', back_populates='food')
+    qr_link: Mapped['QrLink'] = relationship('QrLink', back_populates='food')
+    allergen: Mapped[List['Allergen']] = relationship('Allergen', back_populates='food')
+    favorites: Mapped[List['Favorite']] = relationship('Favorites', back_populates='food')

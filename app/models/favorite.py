@@ -1,9 +1,10 @@
 from sqlalchemy import Integer, String, DateTime, Enum, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 import enum
+from typing import List
 from app.models.base import Base
-
+from app.models.user import User
 class FavoriteType(str, enum.Enum):
     food = "food"
     bundle = "bundle"
@@ -16,3 +17,5 @@ class Favorite(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     type: Mapped[FavoriteType]  # 'food' | 'bundle' | 'supplier'
     target_id: Mapped[int]
+
+    user: Mapped[List['User']] = relationship('User', back_populates='favorites')

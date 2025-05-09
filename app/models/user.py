@@ -4,7 +4,8 @@ from sqlalchemy import String, Boolean, Date, Integer, Enum, DateTime
 from datetime import date, datetime
 import enum
 from app.models.base import Base
-from app.models.models import Allergens, Suppliers
+from app.models.allergen import Allergen
+from app.models.favorite import Favorite
 
 class RoleEnum(enum.Enum):
     consumer = "consumer"
@@ -30,5 +31,5 @@ class User(Base):
     reset_password_token: Mapped[str | None] = mapped_column(String(255), nullable=True)
     reset_password_expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-    allergen: Mapped[List['Allergens']] = relationship('Allergens', secondary='user_allergens', back_populates='user')
-    supplier: Mapped[Optional['Suppliers']] = relationship('Suppliers', back_populates='users')
+    allergen = relationship('Allergen', back_populates='user')
+    favorites = relationship('Favorite', back_populates='user')
