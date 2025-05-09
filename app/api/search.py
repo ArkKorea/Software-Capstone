@@ -9,10 +9,10 @@ from app.services.search_service import *
 router = APIRouter()
 
 @router.post("/search", response_model=Union[ProductResponse, BundleResponse])
-def search_function(request: SearchRequest, user_email: str, db: Session = Depends(get_db)):
+def search_function(request: SearchRequest, db: Session = Depends(get_db)):
     search_type = request.type
     if search_type == "product":
-        return search_product(request, db, user_email)
+        return search_product(request, db)
     elif search_type == "store":
         return search_store(request, db)
     else:
@@ -21,5 +21,5 @@ def search_function(request: SearchRequest, user_email: str, db: Session = Depen
     
 
 @router.post("/store/products", response_model=StoreProductListResponse)
-def search_store_product_list(request: StoreProductListRequest, user_email: str, db: Session = Depends(get_db)):
-    return get_store_product_list(request, db, user_email)
+def search_store_product_list(request: StoreProductListRequest, db: Session = Depends(get_db)):
+    return get_store_product_list(request, db)
