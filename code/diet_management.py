@@ -1,0 +1,162 @@
+import flet as ft
+from datetime import date, timedelta
+import calendar
+from urllib.parse import urlparse, parse_qs
+from nav_bar import nav_bar
+
+def generate_full_calendar(month: int, year: int):
+    first_day_of_month = date(year, month, 1)
+    first_weekday = (first_day_of_month.weekday() + 1) % 7  # Sunday = 0
+    start_date = first_day_of_month - timedelta(days=first_weekday)
+    total_cells = 6 * 7
+    return [start_date + timedelta(days=i) for i in range(total_cells)]
+
+def diet_management_screen(page: ft.Page):
+    today = date.today()
+    current_year = ft.Ref[int]()
+    current_month = ft.Ref[int]()
+
+    current_year.current = today.year
+    current_month.current = today.month
+
+    calendar_column = ft.Column()
+    month_title = ft.Text("", size=18, weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER)
+
+    weekday_labels = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
+    weekday_Colors = [ft.Colors.RED] + [ft.Colors.GREY] * 5 + [ft.Colors.BLUE]
+
+    weekday_row = ft.Row(
+        alignment=ft.MainAxisAlignment.SPACE_EVENLY,
+        controls=[
+            ft.Container(
+                content=ft.Text(day, size=14, color=color),
+                width=48,
+                height=50,
+                alignment=ft.Alignment(0, 0),
+                padding=ft.Padding(top=10, bottom=0, left=0, right=0)
+            )
+            for day, color in zip(weekday_labels, weekday_Colors)
+        ]
+    )
+
+    def on_day_clicked(selected: date):
+        page.go(f"/daydiet?date={selected.isoformat()}")
+
+    def update_calendar():
+        calendar_days = generate_full_calendar(current_month.current, current_year.current)
+        month_title.value = f"{calendar.month_name[current_month.current]} {current_year.current}"
+        calendar_column.controls.clear()
+
+        for week_index in range(6):
+            week_days = calendar_days[week_index * 7:(week_index + 1) * 7]
+
+            if week_index == 5 and not any(day.month == current_month.current for day in week_days):
+                continue
+
+            row = ft.Row(alignment=ft.MainAxisAlignment.SPACE_EVENLY, controls=[])
+            for day_index, date_obj in enumerate(week_days):
+                is_current_month = (date_obj.month == current_month.current)
+                is_today = (date_obj == today)
+
+                number_color = (
+                    ft.Colors.RED if day_index == 0 else
+                    ft.Colors.BLUE if day_index == 6 else
+                    ft.Colors.BLACK
+                )
+
+                if is_today and is_current_month:
+                    content = ft.Container(
+                        width=38,
+                        height=28,
+                        bgcolor=ft.Colors.GREEN,
+                        border_radius=20,
+                        alignment=ft.Alignment(0, 0),
+                        content=ft.Text(str(date_obj.day), size=13, color=ft.Colors.WHITE)
+                    )
+                else:
+                    content = ft.Text(
+                        str(date_obj.day),
+                        size=13,
+                        color=number_color if is_current_month else ft.Colors.GREY
+                    )
+
+                day_container = ft.Container(
+                    width=48,
+                    height=60,
+                    alignment=ft.Alignment(0, 0),
+                    content=content,
+                    on_click=lambda e, d=date_obj: on_day_clicked(d)
+                )
+
+                row.controls.append(day_container)
+            calendar_column.controls.append(row)
+
+    def go_previous_month(e):
+        if current_month.current == 1:
+            current_month.current = 12
+            current_year.current -= 1
+        else:
+            current_month.current -= 1
+        update_calendar()
+        page.update()
+
+    def go_next_month(e):
+        if current_month.current == 12:
+            current_month.current = 1
+            current_year.current += 1
+        else:
+            current_month.current += 1
+        update_calendar()
+        page.update()
+
+    update_calendar()
+
+    return ft.View(
+        "/dietmanagement",
+        controls=[
+            ft.AppBar(
+                title=ft.Text("내   식 단 관 리", size=22, weight=ft.FontWeight.BOLD),
+                center_title=True,
+                bgcolor=ft.Colors.WHITE,
+                leading=ft.IconButton(
+                    icon=ft.Icons.ARROW_BACK,
+                    on_click=lambda _: page.go("/home")
+                )
+            ),
+            ft.Column(
+                controls=[
+                    ft.Row(
+                        alignment=ft.MainAxisAlignment.CENTER,
+                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                        controls=[
+                            ft.IconButton(icon=ft.Icons.KEYBOARD_ARROW_LEFT, on_click=go_previous_month),
+                            month_title,
+                            ft.IconButton(icon=ft.Icons.KEYBOARD_ARROW_RIGHT, on_click=go_next_month),
+                        ]
+                    ),
+                    ft.Container(content=weekday_row, padding=ft.Padding(top=20, bottom=15, left=0, right=0)),
+                    calendar_column,
+                    ft.Container(
+                        content=ft.ElevatedButton(
+                            text="+ 식단 추가하기",
+                            style=ft.ButtonStyle(
+                                shape=ft.RoundedRectangleBorder(radius=30),
+                                bgcolor=ft.Colors.GREEN,
+                                color=ft.Colors.WHITE,
+                                padding=ft.Padding(20, 10, 20, 10)
+                            ),
+                            on_click=lambda e: page.go(f"/adddiet?from=management&date={today.isoformat()}")
+                        ),
+                        padding=20,
+                        alignment=ft.Alignment(0, 0)
+                    ),
+                    ft.Container(height=60)
+                ],
+                expand=True,
+                alignment=ft.MainAxisAlignment.START,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER
+            ),
+            nav_bar(page, current_route="/dietmanagement")
+        ],
+        bgcolor=ft.Colors.WHITE
+    )
