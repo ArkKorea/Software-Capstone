@@ -1,8 +1,7 @@
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from app.models.base import Base
-from app.models.food import Food
-from app.models.user import User
+
 from app.models.user_allergen import user_allergens
 from typing import List
 class Allergen(Base):

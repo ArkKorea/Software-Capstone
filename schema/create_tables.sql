@@ -166,9 +166,21 @@ CREATE TABLE ocr_results (
 -- 식품 조회 이력 테이블
 CREATE TABLE view_log (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
-    food_id INT,
+    user_id INT NOT NULL,
+    type ENUM('food', 'bundle', 'supplier') NOT NULL,
+    food_id INT DEFAULT NULL,
+    bundle_id INT DEFAULT NULL,
+    supplier_id INT DEFAULT NULL,
     viewed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (food_id) REFERENCES foods(id) ON DELETE CASCADE
+    FOREIGN KEY (food_id) REFERENCES foods(id) ON DELETE CASCADE,
+    FOREIGN KEY (bundle_id) REFERENCES food_bundles(id) ON DELETE CASCADE,
+    FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE CASCADE,
+
+    CHECK (
+        (type = 'food' AND food_id IS NOT NULL AND bundle_id IS NULL AND supplier_id IS NULL) OR
+        (type = 'bundle' AND bundle_id IS NOT NULL AND food_id IS NULL AND supplier_id IS NULL) OR
+        (type = 'supplier' AND supplier_id IS NOT NULL AND food_id IS NULL AND bundle_id IS NULL)
+    )
 );

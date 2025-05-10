@@ -4,10 +4,8 @@ from datetime import datetime
 from enum import Enum as PyEnum
 from app.models.base import Base
 from typing import List
-from app.models.food_bundle_item import FoodBundleItem
-from app.models.supplier import Supplier
+
 from app.models.qr_link import QrLink
-from .food import Food
 class FoodBundle(Base):
     __tablename__ = "food_bundles"
 

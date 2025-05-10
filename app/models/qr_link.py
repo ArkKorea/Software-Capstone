@@ -4,9 +4,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 from enum import Enum
 
-from app.models.food import Food
-from app.models.food_bundle import FoodBundle
-from app.models.supplier import Supplier
 
 class typeEnum(Enum):
     food = "food"

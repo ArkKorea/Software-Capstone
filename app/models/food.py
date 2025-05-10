@@ -6,13 +6,10 @@ from typing import List
 
 from app.models.base import Base
 
-from app.models.food_bundle import FoodBundle
-from app.models.food_bundle_item import FoodBundleItem
 from app.models.barcode import Barcode
 from app.models.qr_link import QrLink
 from app.models.allergen import Allergen
 from app.models.favorite import Favorite
-from app.models.supplier import Supplier
 
 class SourceType(PyEnum):
     user = "user"

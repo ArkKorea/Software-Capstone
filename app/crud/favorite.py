@@ -4,7 +4,7 @@ from app.models.food import Food
 from app.models.food_bundle import FoodBundle
 from app.models.supplier import Supplier
 
-# 즐겨찾기 추가가
+# 즐겨찾기 추가
 def add_favorite(db: Session, user_id: int, target_type: FavoriteType, target_id: int) -> Favorite:
     favorite = Favorite(
         user_id=user_id,

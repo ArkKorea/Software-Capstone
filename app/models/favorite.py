@@ -2,13 +2,9 @@ from sqlalchemy import Integer, String, DateTime, Enum, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 import enum
+from app.models.enums import FavoriteType
 from typing import List
 from app.models.base import Base
-from app.models.user import User
-class FavoriteType(str, enum.Enum):
-    food = "food"
-    bundle = "bundle"
-    supplier = "supplier"
 
 class Favorite(Base):
     __tablename__ = "favorites"
