@@ -4,10 +4,8 @@ from datetime import datetime
 from enum import Enum as PyEnum
 from app.models.base import Base
 from typing import List
-from app.models.food_bundle_item import FoodBundleItem
-from app.models.supplier import Supplier
+
 from app.models.qr_link import QrLink
-from .food import Food
 class FoodBundle(Base):
     __tablename__ = "food_bundles"
 
@@ -18,5 +16,7 @@ class FoodBundle(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     supplier: Mapped['Supplier'] = relationship("Supplier", back_populates="bundles")
-    items: Mapped[List['Food']] = relationship("Food", back_populates="bundles")
+    items: Mapped[List['Food']] = relationship("Food", secondary="food_bundle_items", back_populates="bundles")
     qr_link: Mapped['QrLink'] = relationship('QrLink', back_populates='bundle')
+    favorites: Mapped[List["Favorite"]] = relationship("Favorite", back_populates="bundle")
+    food_bundle_items: Mapped[List['FoodBundleItem']] = relationship("FoodBundleItem", back_populates="bundle")

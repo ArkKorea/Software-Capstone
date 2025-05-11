@@ -3,8 +3,6 @@ from sqlalchemy import Integer, String, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 
-from app.models.food import Food
-
 class Barcode(Base):
     __tablename__ = "barcodes"
 

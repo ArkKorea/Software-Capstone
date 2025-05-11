@@ -4,9 +4,6 @@ from datetime import datetime
 from enum import Enum as PyEnum
 from app.models.base import Base
 
-from app.models.food import Food
-from app.models.food_bundle import FoodBundle
-from app.models.qr_link import QrLink
 class Supplier(Base):
     __tablename__ = "suppliers"
 
@@ -22,3 +19,5 @@ class Supplier(Base):
     foods = relationship("Food", back_populates="supplier")
     bundles = relationship("FoodBundle", back_populates="supplier")
     qr_link = relationship('QrLink', back_populates='supplier')
+
+
