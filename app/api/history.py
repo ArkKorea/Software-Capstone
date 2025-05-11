@@ -1,4 +1,3 @@
-# api/routes/history.py
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.schemas.history import ViewLogResponse

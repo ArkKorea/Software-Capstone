@@ -12,7 +12,7 @@ from app.schemas.favorite import (
 )
 
 from app.models.user import User
-from app.core.auth import get_current_user  # 인증 유저 가져오기기
+from app.core.auth import get_current_user  # 인증 유저 가져오기
 
 router = APIRouter()
 

@@ -3,7 +3,6 @@ from sqlalchemy.orm import relationship, Mapped, mapped_column
 from datetime import datetime
 from enum import Enum as PyEnum
 from app.models.base import Base
-from app.models.qr_link import QrLink
 
 class Supplier(Base):
     __tablename__ = "suppliers"

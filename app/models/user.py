@@ -4,8 +4,6 @@ from sqlalchemy import String, Boolean, Date, Integer, Enum, DateTime
 from datetime import date, datetime
 import enum
 from app.models.base import Base
-from app.models.allergen import Allergen
-from app.models.favorite import Favorite
 from .user_allergen import user_allergens
 
 class RoleEnum(enum.Enum):
