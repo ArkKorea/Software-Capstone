@@ -19,3 +19,5 @@ class Supplier(Base):
     foods = relationship("Food", back_populates="supplier")
     bundles = relationship("FoodBundle", back_populates="supplier")
     qr_link = relationship('QrLink', back_populates='supplier')
+
+

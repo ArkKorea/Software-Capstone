@@ -9,5 +9,5 @@ class FoodBundleItem(Base):
     bundle_id: Mapped[int] = mapped_column(ForeignKey("food_bundles.id"), primary_key=True)
     food_id: Mapped[int] = mapped_column(ForeignKey("foods.id"), primary_key=True)
 
-    bundle: Mapped['FoodBundle'] = relationship("FoodBundle", back_populates="items")
-    food: Mapped['Food'] = relationship("Food", back_populates="food_bundle_item")
+    bundle: Mapped['FoodBundle'] = relationship("FoodBundle", back_populates="food_bundle_items")
+    food: Mapped['Food'] = relationship("Food", back_populates="food_bundle_items")

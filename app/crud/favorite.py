@@ -1,15 +1,19 @@
 from sqlalchemy.orm import Session
-from app.models.favorite import Favorite, FavoriteType
+from app.models.favorite import Favorite
 from app.models.food import Food
 from app.models.food_bundle import FoodBundle
 from app.models.supplier import Supplier
 
 # 즐겨찾기 추가
-def add_favorite(db: Session, user_id: int, target_type: FavoriteType, target_id: int) -> Favorite:
+def add_favorite(db: Session, user_id: int, food_id: int = None, bundle_id: int = None, supplier_id: int = None) -> Favorite:
+    if sum([food_id is not None, bundle_id is not None, supplier_id is not None]) != 1:
+        raise ValueError("Exactly one of food_id, bundle_id, or supplier_id must be provided.")
+
     favorite = Favorite(
         user_id=user_id,
-        type=target_type,
-        target_id=target_id,
+        food_id=food_id,
+        bundle_id=bundle_id,
+        supplier_id=supplier_id
     )
     db.add(favorite)
     db.commit()
@@ -17,11 +21,15 @@ def add_favorite(db: Session, user_id: int, target_type: FavoriteType, target_id
     return favorite
 
 # 즐겨찾기 삭제
-def remove_favorite(db: Session, user_id: int, target_type: FavoriteType, target_id: int) -> bool:
+def remove_favorite(db: Session, user_id: int, food_id: int = None, bundle_id: int = None, supplier_id: int = None) -> bool:
+    if sum([food_id is not None, bundle_id is not None, supplier_id is not None]) != 1:
+        raise ValueError("Exactly one of food_id, bundle_id, or supplier_id must be provided.")
+
     favorite = db.query(Favorite).filter(
         Favorite.user_id == user_id,
-        Favorite.type == target_type,
-        Favorite.target_id == target_id
+        Favorite.food_id == food_id,
+        Favorite.bundle_id == bundle_id,
+        Favorite.supplier_id == supplier_id,
     ).first()
 
     if not favorite:
@@ -31,29 +39,17 @@ def remove_favorite(db: Session, user_id: int, target_type: FavoriteType, target
     db.commit()
     return True
 
-# 단품(food) 조회
-def get_food_by_id(db: Session, food_id: int) -> Food | None:
-    return db.query(Food).filter(Food.id == food_id).first()
-
-# 번들(bundle) 조회
-def get_bundle_by_id(db: Session, bundle_id: int) -> FoodBundle | None:
-    return db.query(FoodBundle).filter(FoodBundle.id == bundle_id).first()
-
-# 공급자(supplier) 조회
-def get_supplier_by_id(db: Session, supplier_id: int) -> Supplier | None:
-    return db.query(Supplier).filter(Supplier.id == supplier_id).first()
-
-# 즐겨찾기 조회
-def get_favorites_by_type(db: Session, user_id: int, target_type: FavoriteType) -> list[Favorite]:
+# 즐겨찾기 조회 (food/bundle/supplier 모두 포함)
+def get_favorites(db: Session, user_id: int) -> list[Favorite]:
     return db.query(Favorite).filter(
-        Favorite.user_id == user_id,
-        Favorite.type == target_type
-    ).order_by(Favorite.id.desc())
+        Favorite.user_id == user_id
+    ).order_by(Favorite.id.desc()).all()
 
 # 중복 검사
-def get_favorite_by_type_and_target(db: Session, user_id: int, target_type: FavoriteType, target_id: int) -> Favorite | None:
+def get_favorite_by_target(db: Session, user_id: int, food_id: int = None, bundle_id: int = None, supplier_id: int = None) -> Favorite | None:
     return db.query(Favorite).filter(
         Favorite.user_id == user_id,
-        Favorite.type == target_type,
-        Favorite.target_id == target_id
+        Favorite.food_id == food_id,
+        Favorite.bundle_id == bundle_id,
+        Favorite.supplier_id == supplier_id
     ).first()
