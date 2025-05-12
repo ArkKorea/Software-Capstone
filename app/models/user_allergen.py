@@ -1,8 +1,8 @@
 from sqlalchemy import Table, Column, Integer, ForeignKey
-from sqlalchemy.orm import DeclarativeBase
+from app.models.base import Base
 
 user_allergens = Table(
-    'user_allergens', DeclarativeBase.metadata,
+    'user_allergens', Base.metadata,
     Column('user_id', Integer, ForeignKey('users.id', ondelete='CASCADE'), primary_key=True),
     Column('allergen_id', Integer, ForeignKey('allergens.id', ondelete='CASCADE'), primary_key=True)
 )

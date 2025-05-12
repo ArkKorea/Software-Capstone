@@ -1,12 +1,21 @@
+import os
+import base64
+import uuid
+from app.schemas.product import ProductCreate
+from app.crud.product import create_product
+from app.models.user import User
+
 from app.crud.product import *
 from app.core.auth import get_current_user
-from app.schemas.product import ProductResponse, BundleResponse
+from app.schemas.product import ProductResponse, BundleResponse, ProductCreateResponse
 from app.models.food import Food
 from app.models.user import User
 from fastapi import HTTPException, Depends
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
+UPLOAD_DIR = "app/static/images/products" # 로컬 테스트 용도
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 def decode_barcode(value: str, db: Session) -> ProductResponse:
     product = get_product_by_barcode(value, db)
@@ -54,4 +63,40 @@ def build_product_response(product: Food, current_user: User = Depends(get_curre
         is_favorite=any(f.user_id == current_user.id for f in product.favorites),
         supplier_id=product.supplier_id,
         supplier_name=product.supplier.name
+    )
+
+def save_image_from_base64(base64_str: str) -> str:
+    try:
+        image_data = base64.b64decode(base64_str)
+        filename = f"{uuid.uuid4().hex}.png"
+        filepath = os.path.join(UPLOAD_DIR, filename)
+        with open(filepath, "wb") as f:
+            f.write(image_data)
+        return f"/static/images/products/{filename}"
+    except Exception:
+        raise HTTPException(status_code=400, detail="이미지 인코딩이 잘못되었습니다.")
+
+# 제품 등록록
+def create_product_service(db: Session, product: ProductCreate, user: User) -> ProductCreateResponse:
+    supplier_id = user.supplier_id if user.supplier_id else 1
+
+    image_url = None
+    if product.image_base64:
+        image_url = save_image_from_base64(product.image_base64)
+
+    food = create_product(
+        db=db,
+        product=product,
+        supplier_id=supplier_id,
+        registered_by_user_id=user.id,
+        image_url=image_url or ""
+    )
+
+    return ProductCreateResponse(
+        product_id=food.id,
+        name=food.name,
+        image_url=food.image_url or "",
+        ingredient=food.ingredient or "",
+        supplier_id=food.supplier.id,
+        supplier_name=food.supplier.name
     )

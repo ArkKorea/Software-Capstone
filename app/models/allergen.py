@@ -1,15 +1,16 @@
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from app.models.base import Base
-from app.models.food import Food
-from app.models.user import User
+
 from app.models.user_allergen import user_allergens
 from typing import List
+
 class Allergen(Base):
     __tablename__ = 'allergens'
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(255))
 
-    food: Mapped[List['Food']] = relationship('Food', back_populates='allergen')
+    food: Mapped[List['Food']] = relationship('Food',secondary='food_allergens',back_populates='allergen')
+
     user: Mapped[List['User']]= relationship('User',secondary=user_allergens, back_populates='allergen')
