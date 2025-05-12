@@ -136,6 +136,19 @@ CREATE TABLE user_allergens (
     FOREIGN KEY (allergen_id) REFERENCES allergens(id) ON DELETE CASCADE
 );
 
+-- 13. 증상 기록 테이블
+CREATE TABLE symptoms_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    skin INT,
+    stomach INT,
+    breath INT,
+    headache INT,
+    fatigue INT,
+    log_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 ALTER TABLE foods
 ADD COLUMN registered_by_user_id INT NOT NULL,
 ADD CONSTRAINT fk_foods_users FOREIGN KEY (registered_by_user_id) REFERENCES users(id);

@@ -33,3 +33,4 @@ class User(Base):
     allergen = relationship('Allergen',secondary=user_allergens, back_populates='user')
     favorites: Mapped[List["Favorite"]] = relationship("Favorite", back_populates="user", cascade="all, delete")
     view_logs: Mapped[List["ViewLog"]] = relationship("ViewLog", back_populates="user")
+    symptoms_logs: Mapped[List["SymptomsLog"]] = relationship("SymptomsLog", back_populates="user")
