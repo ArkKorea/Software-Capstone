@@ -38,7 +38,7 @@ async def main(page: ft.Page):
     page.clean()
     page.add(splash_content(page))
     await asyncio.sleep(2)
-    page.go("/home")
+    page.go("/login")
 
     def route_change(e):
         route = page.route.split("?")[0]
