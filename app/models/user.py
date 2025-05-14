@@ -34,3 +34,4 @@ class User(Base):
     favorites: Mapped[List["Favorite"]] = relationship("Favorite", back_populates="user", cascade="all, delete")
     view_logs: Mapped[List["ViewLog"]] = relationship("ViewLog", back_populates="user")
     symptoms_logs: Mapped[List["SymptomsLog"]] = relationship("SymptomsLog", back_populates="user")
+    intake_logs: Mapped[List["IntakeLog"]] = relationship("IntakeLog", back_populates="user", cascade="all, delete")

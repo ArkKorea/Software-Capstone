@@ -25,6 +25,15 @@ def get_bundle_by_qrcode(qrcode: str, db: Session):
 def get_supplier_by_qrcode(qrcode: str, db: Session):
     return db.query(Supplier).filter(Supplier.qr_link.any(QrLinks.code == qrcode)).first()
 
+def get_product_by_id(product_id: int, db: Session):
+    return db.query(Food).filter(Food.id == product_id).first()
+
+def get_product_by_name(product_name: str, db: Session):
+    return db.query(Food).filter(Food.name == product_name).first()
+
+def get_all_products_id_name(db: Session):
+    return db.query(Food.id, Food.name).all()
+
 # 제품 생성
 def create_product(
     db: Session,

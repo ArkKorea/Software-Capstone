@@ -33,3 +33,4 @@ class Food(Base):
     qr_link: Mapped['QrLink'] = relationship('QrLink', back_populates='food')
     favorites: Mapped[List["Favorite"]] = relationship("Favorite", back_populates="food")
     food_bundle_items: Mapped[List['FoodBundleItem']] = relationship('FoodBundleItem', back_populates='food')
+    intake_logs: Mapped[List['IntakeLog']] = relationship("IntakeLog", back_populates="food")
