@@ -76,7 +76,7 @@ def save_image_from_base64(base64_str: str) -> str:
     except Exception:
         raise HTTPException(status_code=400, detail="이미지 인코딩이 잘못되었습니다.")
 
-# 제품 등록록
+# 제품 등록
 def create_product_service(db: Session, product: ProductCreate, user: User) -> ProductCreateResponse:
     supplier_id = user.supplier_id if user.supplier_id else 1
 
