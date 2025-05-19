@@ -100,3 +100,4 @@ def create_product_service(db: Session, product: ProductCreate, user: User) -> P
         supplier_id=food.supplier.id,
         supplier_name=food.supplier.name
     )
+

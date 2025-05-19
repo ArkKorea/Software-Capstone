@@ -1,7 +1,7 @@
 #qr 혹은 바코드 처리 진입점
 from typing import Union
 from app.schemas.product import ProductResponse, ProductRequest, BundleResponse, ProductCreate, ProductCreateResponse
-from app.services.product_service import decode_barcode, decode_qrcode, create_product_service
+from app.services.product_service import decode_barcode, decode_qrcode, create_product_service, get_product_detail_service
 from app.db.database import get_db
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -28,3 +28,4 @@ def create_product(
     current_user: User = Depends(get_current_user)
 ):
     return create_product_service(db, request, current_user)
+

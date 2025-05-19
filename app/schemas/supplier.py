@@ -1,5 +1,8 @@
 from pydantic import BaseModel
 from datetime import datetime
+from app.schemas.product import ProductResponse
+
+from typing import Optional, List
 
 class SupplierOut(BaseModel):
     id: int
@@ -12,3 +15,17 @@ class SupplierOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+# SupplierDetailResponse에서 사용하기 위한 bundle response의 축약형
+class BundleSummary(BaseModel):
+    id: int
+    name: str
+    image_url: Optional[str] = None
+
+class SupplierDetailResponse(BaseModel):
+    id: int
+    name: str
+    image_url: Optional[str]
+    products: List[ProductResponse]
+    bundles: List[BundleSummary]  # 이름, id, 이미지만
+

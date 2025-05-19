@@ -10,3 +10,4 @@ class FoodBundleOut(BaseModel):
 
     class Config:
         from_attributes = True
+
