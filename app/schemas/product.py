@@ -23,7 +23,7 @@ class BundleResponse(BaseModel):
     supplier_id:int
     products:List[ProductResponse]
 
-# 제품 등록
+# 내 제품 등록
 class ProductCreate(BaseModel):
     name: str
     ingredient: Optional[str] = None
@@ -37,3 +37,15 @@ class ProductCreateResponse(BaseModel):
     ingredient: str
     supplier_id: int
     supplier_name: str
+
+# 내 제품 수정
+class ProductUpdate(BaseModel):
+    product_id: int
+    name: Optional[str] = None
+    ingredient: Optional[str] = None
+    image_base64: Optional[str] = None
+    allergies: Optional[List[str]] = None
+
+# 내 제품 삭제
+class ProductDelete(BaseModel):
+    product_id: int

@@ -4,7 +4,7 @@ from app.models.models import Barcodes, QrLinks
 from app.models.food import Food
 from app.models.food_bundle import FoodBundle
 from app.models.supplier import Supplier
-from app.models.food_allergens import food_allergens
+from app.models.food_allergens import FoodAllergen
 from app.schemas.product import ProductCreate
 
 from app.models.allergen import Allergen
@@ -60,7 +60,7 @@ def create_product(
     allergen_objs = db.scalars(stmt).all()
 
     for allergen in allergen_objs:
-        db.add(food_allergens(food_id=new_food.id, allergen_id=allergen.id))
+        db.add(FoodAllergen(food_id=new_food.id, allergen_id=allergen.id))
 
     db.commit()
     db.refresh(new_food)

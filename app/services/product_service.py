@@ -7,12 +7,15 @@ from app.models.user import User
 
 from app.crud.product import *
 from app.core.auth import get_current_user
-from app.schemas.product import ProductResponse, BundleResponse, ProductCreateResponse
+from app.schemas.product import ProductResponse, BundleResponse, ProductCreateResponse, ProductUpdate, ProductDelete
 from app.models.food import Food
 from app.models.user import User
+from app.models.food_allergens import FoodAllergen
+from app.models.allergen import Allergen
 from fastapi import HTTPException, Depends
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
+from sqlalchemy import delete
 
 UPLOAD_DIR = "app/static/images/products" # 로컬 테스트 용도
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -101,3 +104,70 @@ def create_product_service(db: Session, product: ProductCreate, user: User) -> P
         supplier_name=food.supplier.name
     )
 
+# 내 제품 목록 조회
+def get_my_products_service(db: Session, user: User) -> list[ProductResponse]:
+    if user.role != "supplier" or not user.supplier_id:
+        raise HTTPException(status_code=403, detail="상품 목록 조회 권한이 없습니다.")
+
+    products = db.query(Food).filter(Food.supplier_id == user.supplier_id).all()
+
+    result = []
+    for food in products:
+        allergens = [a.name for a in food.allergen]
+        result.append(ProductResponse(
+            product_id=food.id,
+            name=food.name,
+            image_url=food.image_url or "",
+            ingredient=food.ingredient or "",
+            allergen_hit=allergens,
+            allergen_safe=[],
+            is_favorite=False,
+            supplier_id=user.supplier_id,
+            supplier_name=user.name
+        ))
+    return result
+
+# 내 상품 수정
+def update_product_service(db: Session, data: ProductUpdate, user: User):
+    if user.role != "supplier" or not user.supplier_id:
+        raise HTTPException(status_code=403, detail="수정 권한이 없습니다.")
+
+    product = db.query(Food).filter(Food.id == data.product_id, Food.supplier_id == user.supplier_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="해당 상품을 찾을 수 없습니다.")
+
+    if data.name:
+        product.name = data.name
+    if data.ingredient is not None:
+        product.ingredient = data.ingredient
+    if data.image_base64:
+        product.image_url = save_image_from_base64(data.image_base64)
+
+    # 알러지 정보 갱신
+    if data.allergies is not None:
+        db.execute(delete(FoodAllergen).where(FoodAllergen.food_id == product.id))
+
+        allergen_objs = db.query(Allergen).filter(Allergen.name.in_(data.allergies)).all()
+        for allergen in allergen_objs:
+            db.add(FoodAllergen(food_id=product.id, allergen_id=allergen.id))
+
+    db.commit()
+    return {"message": "상품이 성공적으로 수정되었습니다."}
+
+# 내 제품 삭제
+def delete_product_service(db: Session, data: ProductDelete, user: User):
+    if user.role != "supplier" or not user.supplier_id:
+        raise HTTPException(status_code=403, detail="삭제 권한이 없습니다.")
+
+    product = db.query(Food).filter(
+        Food.id == data.product_id,
+        Food.supplier_id == user.supplier_id
+    ).first()
+
+    if not product:
+        raise HTTPException(status_code=404, detail="해당 상품을 찾을 수 없습니다.")
+
+    db.delete(product)
+    db.commit()
+
+    return {"message": "상품이 성공적으로 삭제되었습니다."}
