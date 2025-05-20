@@ -16,40 +16,39 @@ from fastapi import HTTPException, Depends
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import delete
+from typing import Union
+from app.services.detail_service import get_bundle_detail_service, get_product_detail_service
 
 UPLOAD_DIR = "app/static/images/products" # 로컬 테스트 용도
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-def decode_barcode(value: str, db: Session) -> ProductResponse:
+def decode_barcode(value: str, db: Session, user: User) -> ProductResponse:
     product = get_product_by_barcode(value, db)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    return build_product_response(product,  db)
+    return get_product_detail_service(db, product.id, user)
 
-def decode_qrcode(value: str, db: Session):
+def decode_qrcode(value: str, db: Session, user: User) -> Union[ProductResponse, BundleResponse, RedirectResponse]:
     data_type = get_type_by_qrcode(value, db)
+
     if data_type == 'food':
         product = get_product_by_qrcode(value, db)
         if not product:
             raise HTTPException(status_code=404, detail="Product not found")
-        return build_product_response(product)
+        return get_product_detail_service(db, product.id, user)
+
     elif data_type == 'bundle':
         bundle = get_bundle_by_qrcode(value, db)
         if not bundle:
             raise HTTPException(status_code=404, detail="Product not found")
-        return BundleResponse(
-            bundle_id=bundle.id,
-            name=bundle.name,
-            image_url=bundle.image_url,
-            product_list=[
-                build_product_response(f) for f in bundle.items
-            ]
-        )
+        return get_bundle_detail_service(db, bundle.id, user)
+
     elif data_type == 'supplier':
         supplier = get_supplier_by_qrcode(value, db)
         if not supplier:
             raise HTTPException(status_code=404, detail="등록된 매장이 없습니다.")
         return RedirectResponse(url=f"/supplier/{supplier.id}")
+
     else:
         raise HTTPException(status_code=400, detail="유효하지 않은 요청 타입입니다. 'barcode' 또는 'qrcode'를 입력해주세요.")
 
