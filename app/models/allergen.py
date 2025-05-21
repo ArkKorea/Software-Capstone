@@ -1,8 +1,6 @@
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from app.models.base import Base
-
-from app.models.user_allergen import user_allergens
 from typing import List
 
 class Allergen(Base):
@@ -13,4 +11,4 @@ class Allergen(Base):
 
     food: Mapped[List['Food']] = relationship('Food',secondary='food_allergens',back_populates='allergen')
 
-    user: Mapped[List['User']]= relationship('User',secondary=user_allergens, back_populates='allergen')
+    user: Mapped[List['User']]= relationship('User',secondary="user_allergens", back_populates='allergen')

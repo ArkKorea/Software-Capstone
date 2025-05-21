@@ -6,22 +6,22 @@ class ProductRequest(BaseModel):
     value:str
 
 class ProductResponse(BaseModel):
-    product_id:int
-    name:str
-    image_url:str
-    allergen_hit:list[str]
-    allergen_safe:list[str]
-    ingredient:str
+    product_id:int = None
+    name:str = None
+    image_url:str = None
+    allergen_hit:list[str] = []
+    allergen_safe:list[str] = []
+    ingredient:str = None
     is_favorite:bool
     supplier_id:int
     supplier_name:str
 
 class BundleResponse(BaseModel):
-    id:int
-    name:str
-    image_url:str
-    supplier_id:int
-    products:List[ProductResponse]
+    id:int = None
+    name:str = None
+    image_url:str = None
+    supplier_id:int = None
+    products:List[ProductResponse] = []
 
 # 제품 등록
 class ProductCreate(BaseModel):

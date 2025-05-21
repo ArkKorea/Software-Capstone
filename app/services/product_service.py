@@ -2,34 +2,32 @@ import os
 import base64
 import uuid
 from app.schemas.product import ProductCreate
-from app.crud.product import create_product
 from app.models.user import User
 
 from app.crud.product import *
-from app.core.auth import get_current_user
 from app.schemas.product import ProductResponse, BundleResponse, ProductCreateResponse
 from app.models.food import Food
 from app.models.user import User
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
 UPLOAD_DIR = "app/static/images/products" # 로컬 테스트 용도
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-def decode_barcode(value: str, db: Session) -> ProductResponse:
+def decode_barcode(value: str, db: Session, current_user: User) -> ProductResponse:
     product = get_product_by_barcode(value, db)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    return build_product_response(product,  db)
+    return build_product_response(product, current_user)
 
-def decode_qrcode(value: str, db: Session):
+def decode_qrcode(value: str, db: Session, current_user: User):
     data_type = get_type_by_qrcode(value, db)
     if data_type == 'food':
         product = get_product_by_qrcode(value, db)
         if not product:
             raise HTTPException(status_code=404, detail="Product not found")
-        return build_product_response(product)
+        return build_product_response(product, current_user)
     elif data_type == 'bundle':
         bundle = get_bundle_by_qrcode(value, db)
         if not bundle:
@@ -50,16 +48,17 @@ def decode_qrcode(value: str, db: Session):
     else:
         raise HTTPException(status_code=400, detail="유효하지 않은 요청 타입입니다. 'barcode' 또는 'qrcode'를 입력해주세요.")
 
-def build_product_response(product: Food, current_user: User = Depends(get_current_user)) -> ProductResponse:
+def build_product_response(product: Food, current_user: User) -> ProductResponse:
     if not current_user:
         raise HTTPException(status_code=404, detail="User not found")
+    user_allergen_ids = [a.id for a in getattr(current_user, "allergen", [])]
     return ProductResponse(
         product_id=product.id,
         name=product.name,
-        image_url=product.image_url,
-        allergen_hit=[a.name for a in product.allergen if a.id in current_user.allergen],
-        allergen_safe=[a.name for a in product.allergen if a.id not in current_user.allergen],
-        ingredient_text=product.ingredient,
+        image_url=product.image_url or "",
+        allergen_hit=[a.name for a in product.allergen if a.id in user_allergen_ids],
+        allergen_safe=[a.name for a in product.allergen if a.id not in user_allergen_ids],
+        ingredient_text=product.ingredient or "",
         is_favorite=any(f.user_id == current_user.id for f in product.favorites),
         supplier_id=product.supplier_id,
         supplier_name=product.supplier.name
