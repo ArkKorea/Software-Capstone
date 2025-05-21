@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from app.models.user import User
+from app.models.user import User, RoleEnum
 from app.schemas.supplier import SupplierDetailResponse, BundleSummary
 from app.schemas.product import ProductResponse, BundleResponse
 from app.crud.item_lookup import get_food_by_id, get_bundle_by_id, get_supplier_by_id
@@ -15,9 +15,10 @@ def get_product_detail_service(db: Session, product_id: int, user: User) -> Prod
     if user.role in ("consumer", "supplier"):
         add_or_update_view_log(db, user.id, "food", product_id)
 
-    user_allergen_names = {a.name for a in user.allergens} if user.role == "consumer" else set()
+    user_allergen_names = {a.name for a in user.allergen} if user.role == RoleEnum.consumer else set()
     food_allergen_names = {a.name for a in food.allergen}
 
+    print("user_allergen_names", user.role)
     allergen_hit = list(user_allergen_names & food_allergen_names)
     allergen_safe = list(food_allergen_names - user_allergen_names)
 

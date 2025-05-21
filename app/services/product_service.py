@@ -52,16 +52,17 @@ def decode_qrcode(value: str, db: Session, user: User) -> Union[ProductResponse,
     else:
         raise HTTPException(status_code=400, detail="유효하지 않은 요청 타입입니다. 'barcode' 또는 'qrcode'를 입력해주세요.")
 
-def build_product_response(product: Food, current_user: User = Depends(get_current_user)) -> ProductResponse:
+def build_product_response(product: Food, current_user: User) -> ProductResponse:
     if not current_user:
         raise HTTPException(status_code=404, detail="User not found")
+    user_allergen_ids = [a.id for a in getattr(current_user, "allergen", [])]
     return ProductResponse(
         product_id=product.id,
-        name=product.name,
-        image_url=product.image_url,
-        allergen_hit=[a.name for a in product.allergen if a.id in current_user.allergen],
-        allergen_safe=[a.name for a in product.allergen if a.id not in current_user.allergen],
-        ingredient_text=product.ingredient,
+        name=product.name or "",
+        image_url=product.image_url or "",
+        allergen_hit=[a.name for a in product.allergen if a.id in user_allergen_ids],
+        allergen_safe=[a.name for a in product.allergen if a.id not in user_allergen_ids],
+        ingredient_text=product.ingredient or "",
         is_favorite=any(f.user_id == current_user.id for f in product.favorites),
         supplier_id=product.supplier_id,
         supplier_name=product.supplier.name

@@ -9,7 +9,7 @@ class SearchRequest(BaseModel):
 class Store(BaseModel):
     store_id: int
     name: str
-    address: str
+    address: str = None
 
 class Bundle(BaseModel):
     bundle_id: int

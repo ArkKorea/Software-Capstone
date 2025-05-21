@@ -1,15 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 from typing import Union
+from sqlalchemy.orm import Session
 from app.core.auth import get_current_user
 from app.db.database import get_db
 from app.schemas.search import SearchRequest, StoreProductListRequest, StoreProductListResponse
-from app.schemas.product import ProductResponse, BundleResponse
 from app.services.search_service import *
 
 router = APIRouter()
 
-@router.post("/search", response_model=SearchProductResponse)
+@router.post("/search", response_model=Union[SearchProductResponse, SearchStoreResponse])
 def search_function(request: SearchRequest,
                     db: Session = Depends(get_db),
                     current_user: User = Depends(get_current_user)):
@@ -17,10 +16,10 @@ def search_function(request: SearchRequest,
     if search_type == "product":
         return search_product(request, db, current_user)
     elif search_type == "store":
-        return search_store(request, db, current_user)
+        return search_store(request, db)
     else:
         raise HTTPException(status_code=400,
-                            detail="유효하지 않은 요청 타입입니다. 'product' 또는 'bundle'을 입력해주세요.")
+                            detail="유효하지 않은 요청 타입입니다. 'product' 또는 'store'을 입력해주세요.")
     
 
 @router.post("/store/products", response_model=StoreProductListResponse)

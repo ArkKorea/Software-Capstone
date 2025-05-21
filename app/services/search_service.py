@@ -3,6 +3,7 @@ from app.schemas.search import (SearchRequest, Store, SearchStoreResponse, Searc
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.crud.search import *
+from .detail_service import get_product_detail_service, get_bundle_detail_service
 from .product_service import build_product_response
 from app.models.user import User
 
@@ -11,7 +12,7 @@ def search_product(request: SearchRequest, db: Session, current_user: User) -> S
     result_product = get_product_by_keyword(request.query, db)
     result_bundle = get_bundle_by_keyword(request.query, db)
     return_value = SearchProductResponse(products=[], bundles=[])
-    result_product = [build_product_response(product, current_user) for product in result_product]
+    result_product = [get_product_detail_service(db, product.id, current_user) for product in result_product]
     if not result_bundle:
         return SearchProductResponse(products=result_product, bundles=[])
     return_value.products = result_product
@@ -36,7 +37,9 @@ def search_store(request: SearchRequest, db: Session) -> SearchStoreResponse:
     if not result:
         raise HTTPException(status_code=404, detail="해당 지점을 찾을 수 없습니다.")
     return SearchStoreResponse(
-        stores=[Store(store_id=store.id, name=store.name, address=store.address) for store in result]
+        stores=[Store(store_id=store.id,
+                      name=store.name,
+                      address=store.address or "") for store in result]
     )
 
 def get_store_product_list(request: StoreProductListRequest, db: Session, current_user: User) -> StoreProductListResponse:
@@ -46,6 +49,8 @@ def get_store_product_list(request: StoreProductListRequest, db: Session, curren
     
     products = store.foods
     return StoreProductListResponse(
-        store=Store(store_id=store.id, name=store.name, address=store.address),
-        products=[build_product_response(product, current_user) for product in products]
+        store=Store(store_id=store.id,
+                    name=store.name or "",
+                    address=store.address or ""),
+        products=[get_product_detail_service(db, product.id, current_user) for product in products]
     )
