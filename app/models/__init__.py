@@ -11,4 +11,4 @@ from .supplier import Supplier
 from .user_allergen import user_allergens
 from .user import User
 from .view_log import ViewLog
-from .food_allergens import food_allergens
+from .food_allergens import FoodAllergen
