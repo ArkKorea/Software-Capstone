@@ -1,18 +1,16 @@
-from app.schemas.symptom import *
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from app.core.auth import get_current_user
-from fastapi import Depends, HTTPException
+from app.schemas.symptom import *
 from app.models.user import User
-from app.models.symptom import SymptomsLog
 from app.crud.symptom import *
 
-def save_user_symptom(request: SymptomSaveRequest, db: Session, current_user: User = Depends(get_current_user)) -> SymptomSaveResponse:
+def save_user_symptom(request: SymptomSaveRequest, db: Session, current_user: User) -> SymptomSaveResponse:
     insert_user_symptom(request, db, current_user.id)
     return SymptomSaveResponse(
         message="설문이 저장되었습니다."
     )
 
-def get_user_symptom_by_date(request: SymptomByDateRequest, db: Session, current_user: User = Depends(get_current_user)) -> SymptomByDateResponse:
+def get_user_symptom_by_date(request: SymptomByDateRequest, db: Session, current_user: User) -> SymptomByDateResponse:
     query = select_user_symptom(request.date, db, current_user.id)
     if query is None:
         raise HTTPException(status_code=404, detail="해당 날짜에 대한 증상 데이터가 없습니다.")

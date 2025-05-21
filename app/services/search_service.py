@@ -1,18 +1,19 @@
 from app.schemas.search import (SearchRequest, Store, SearchStoreResponse, SearchProductResponse,
                                 Bundle, StoreProductListRequest, StoreProductListResponse)
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException
 from app.crud.search import *
 from .product_service import build_product_response
 from app.models.user import User
-from app.core.auth import get_current_user
 
 
-def search_product(request: SearchRequest, db: Session, current_user: User = Depends(get_current_user)) -> SearchProductResponse:
+def search_product(request: SearchRequest, db: Session, current_user: User) -> SearchProductResponse:
     result_product = get_product_by_keyword(request.query, db)
     result_bundle = get_bundle_by_keyword(request.query, db)
-    return_value = SearchProductResponse()
-    result_product = [build_product_response(product) for product in result_product]
+    return_value = SearchProductResponse(products=[], bundles=[])
+    result_product = [build_product_response(product, current_user) for product in result_product]
+    if not result_bundle:
+        return SearchProductResponse(products=result_product, bundles=[])
     return_value.products = result_product
     for bundle in result_bundle:
         bundle_allergen_hit = []
@@ -38,7 +39,7 @@ def search_store(request: SearchRequest, db: Session) -> SearchStoreResponse:
         stores=[Store(store_id=store.id, name=store.name, address=store.address) for store in result]
     )
 
-def get_store_product_list(request: StoreProductListRequest, db: Session) -> StoreProductListResponse:
+def get_store_product_list(request: StoreProductListRequest, db: Session, current_user: User) -> StoreProductListResponse:
     store = get_store_by_id(request.store_id, db)
     if not store:
         raise HTTPException(status_code=404, detail="해당 지점을 찾을 수 없습니다.")
@@ -46,5 +47,5 @@ def get_store_product_list(request: StoreProductListRequest, db: Session) -> Sto
     products = store.foods
     return StoreProductListResponse(
         store=Store(store_id=store.id, name=store.name, address=store.address),
-        products=[build_product_response(product) for product in products]
+        products=[build_product_response(product, current_user) for product in products]
     )
