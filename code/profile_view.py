@@ -1,49 +1,87 @@
 import flet as ft
+from nav_bar import nav_bar
 
 def profile_view_screen(page: ft.Page):
     profile_avatar = ft.Ref[ft.Image]()
     file_picker = ft.FilePicker()
 
-    def change_avatar(e):
-        file_picker.pick_files(
-            allow_multiple=False,
-            allowed_extensions=["png", "jpg", "jpeg"]
-        )
+    name_text = ft.Ref[ft.Text]()
+    name_input = ft.Ref[ft.TextField]()
+    name_dialog = ft.AlertDialog()
+    
+    # 초기 이름 저장 및 로딩
+    default_name = page.client_storage.get("display_name") or "홍길동님"
 
-    def on_file_result(e: ft.FilePickerResultEvent):
-        if e.files:
-            selected_file_path = e.files[0].path
-            profile_avatar.current.src = selected_file_path
-            page.update()
+    # 이름 수정 팝업 함수
+    def open_name_dialog(e):
+        name_input.current.value = name_text.current.value
+        name_dialog.open = True
+        page.dialog = name_dialog
+        page.update()
 
-    file_picker.on_result = on_file_result
-    page.overlay.append(file_picker)
+    def save_name(e):
+        new_name = name_input.current.value.strip()
+        if new_name:
+            name_text.current.value = new_name
+            page.client_storage.set("display_name", new_name)
+        name_dialog.open = False
+        page.update()
+
+    def cancel_dialog(e):
+        name_dialog.open = False
+        page.update()
+
+    # 팝업 정의
+    name_dialog = ft.AlertDialog(
+        modal=True,
+        title=ft.Text("이름 수정"),
+        content=ft.TextField(ref=name_input, autofocus=True),
+        actions=[
+            ft.TextButton("취소", on_click=cancel_dialog),
+            ft.TextButton("저장", on_click=save_name)
+        ],
+        actions_alignment=ft.MainAxisAlignment.END
+    )
+
+    file_picker.on_result = lambda e: (
+        setattr(profile_avatar.current, "src", e.files[0].path),
+        page.update()
+    ) if e.files else None
+    page.overlay.extend([file_picker, name_dialog])
+
+    def handle_logout(e): page.go("/login")
+    def go_to_myallergy(e): page.go("/myallergy")
+    def go_to_notice(e): page.go("/notice")
+    def go_to_terms(e): page.go("/terms")
 
     return ft.View(
         "/profileview",
         controls=[
             ft.Column(
                 expand=True,
+                scroll=ft.ScrollMode.HIDDEN,
                 controls=[
                     # 상단 로고
                     ft.Container(
                         alignment=ft.Alignment(0, 0),
-                        padding=ft.Padding(left=0, top=40, right=0, bottom=10),
+                        padding=ft.Padding(top=40, bottom=10, left=0, right=0),
                         content=ft.Image(
                             src="https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_text.png",
                             width=180,
                             fit=ft.ImageFit.CONTAIN
                         )
                     ),
-
-                    # 프로필 아바타 + 닉네임 + 유저네임
+                    # 프로필
                     ft.Container(
                         alignment=ft.Alignment(0, 0),
-                        padding=ft.Padding(left=10, top=10, right=10, bottom=10),
+                        padding=ft.Padding(10, 10, 10, 10),
                         content=ft.Column(
                             [
                                 ft.GestureDetector(
-                                    on_tap=change_avatar,
+                                    on_tap=lambda e: file_picker.pick_files(
+                                        allow_multiple=False,
+                                        allowed_extensions=["png", "jpg", "jpeg"]
+                                    ),
                                     content=ft.Container(
                                         width=80,
                                         height=80,
@@ -52,13 +90,14 @@ def profile_view_screen(page: ft.Page):
                                         content=ft.Image(
                                             ref=profile_avatar,
                                             src="https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/profile/home_profile_avatar.png",
-                                            fit=ft.ImageFit.COVER,
-                                            width=80,
-                                            height=80
+                                            fit=ft.ImageFit.COVER
                                         )
                                     )
                                 ),
-                                ft.Text("홍길동님", size=20, weight=ft.FontWeight.BOLD),
+                                ft.GestureDetector(
+                                    on_tap=open_name_dialog,
+                                    content=ft.Text(default_name, ref=name_text, size=20, weight=ft.FontWeight.BOLD)
+                                ),
                                 ft.Text("@username", size=14, color=ft.Colors.GREY)
                             ],
                             alignment=ft.MainAxisAlignment.CENTER,
@@ -66,70 +105,34 @@ def profile_view_screen(page: ft.Page):
                             spacing=5
                         )
                     ),
-
-                    # 메뉴 리스트
+                    # 메뉴
                     ft.Divider(height=1, thickness=1),
-                    *[menu_item(label) for label in [
+                    *[menu_item(label, handle_logout, go_to_myallergy, go_to_notice, go_to_terms) for label in [
                         "공지사항", "이용 약관", "내 알레르기", "알림 설정",
                         "고객센터", "언어", "회원 탈퇴", "로그아웃"
                     ]],
-                    ft.Divider(height=1, thickness=1),
-                ],
-                scroll=ft.ScrollMode.AUTO
+                    ft.Divider(height=1, thickness=1)
+                ]
             ),
-
-            # 하단 네비게이션 바
-            ft.Container(
-                bgcolor=ft.Colors.WHITE,
-                padding=ft.Padding(left=8, top=8, right=8, bottom=8),
-                content=ft.Row(
-                    alignment=ft.MainAxisAlignment.SPACE_AROUND,
-                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                    controls=[
-                        nav_icon(ft.Icons.HOME, "Home", page, "/home"),
-                        nav_icon(ft.Icons.SEARCH, "Search", page, "/search"),
-                        ft.Container(
-                            content=ft.FloatingActionButton(
-                                icon=ft.Icons.QR_CODE_SCANNER,
-                                bgcolor=ft.Colors.GREEN,
-                                mini=True,
-                                height=40,
-                                width=40
-                            ),
-                            margin=ft.Margin(top=-10, bottom=0, left=0, right=0)
-                        ),
-                        nav_icon(ft.Icons.HISTORY, "History", page, "/history"),
-                        nav_icon(ft.Icons.PERSON_OUTLINE, "Profile", page, "/profileview", selected=True),
-                    ]
-                ),
-                border_radius=ft.BorderRadius(top_left=20, top_right=20, bottom_left=0, bottom_right=0),
-                height=65
-            )
+            nav_bar(page, current_route="/profileview")
         ]
     )
 
-# 메뉴 항목 생성 함수
-def menu_item(label):
-    return ft.Container(
-        content=ft.ListTile(
-            title=ft.Text(label),
-            trailing=ft.Icon(ft.Icons.KEYBOARD_ARROW_RIGHT),
-            dense=True
-        ),
-        padding=ft.Padding(left=10, top=0, right=10, bottom=0),
+def menu_item(label, logout_handler=None, myallergy_handler=None, notice_handler=None, terms_handler=None):
+    tile = ft.ListTile(
+        title=ft.Text(label),
+        trailing=ft.Icon(ft.Icons.KEYBOARD_ARROW_RIGHT),
+        dense=True
     )
 
-# 네비게이션 아이콘
-def nav_icon(icon, label, page, route, selected=False):
-    color = ft.Colors.GREEN if selected else ft.Colors.BLUE_GREY
+    handlers = {
+        "로그아웃": logout_handler,
+        "내 알레르기": myallergy_handler,
+        "공지사항": notice_handler,
+        "이용 약관": terms_handler
+    }
+
     return ft.GestureDetector(
-        on_tap=lambda e: page.go(route),
-        content=ft.Column(
-            [
-                ft.Icon(icon, color=color, size=20),
-                ft.Text(label, size=11, color=color)
-            ],
-            alignment=ft.MainAxisAlignment.CENTER,
-            horizontal_alignment=ft.CrossAxisAlignment.CENTER
-        )
+        on_tap=handlers.get(label, lambda e: None),
+        content=ft.Container(content=tile, padding=ft.Padding(10, 0, 10, 0))
     )

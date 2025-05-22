@@ -4,8 +4,6 @@ from nav_bar import nav_bar
 def search_view_screen(page: ft.Page):
     search_filter = ft.Ref[str]()
     search_filter.current = "제품명"
-    sound_on = ft.Ref[bool]()
-    sound_on.current = True
     recent_searches = []
 
     dummy_db = {
@@ -23,19 +21,6 @@ def search_view_screen(page: ft.Page):
     )
 
     recent_search_column = ft.Column()
-
-    notification_icon = ft.IconButton(
-        icon="notifications_none_outlined"
-    )
-
-    def toggle_sound(e):
-        sound_on.current = not sound_on.current
-        notification_icon.icon = (
-            "notifications_none_outlined" if sound_on.current else "notifications_off_outlined"
-        )
-        page.update()
-
-    notification_icon.on_click = toggle_sound
 
     def change_filter(e):
         selected = e.control.text
@@ -120,8 +105,7 @@ def search_view_screen(page: ft.Page):
                                 ft.Image(
                                     src="https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_text.png",
                                     width=200
-                                ),
-                                ft.Row(controls=[notification_icon], spacing=10)
+                                )
                             ],
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN
                         ),
@@ -145,7 +129,7 @@ def search_view_screen(page: ft.Page):
                                         width=page.width * 0.5,
                                         content=search_field
                                     ),
-                                    filter_row  # ✅ 변경된 필터 UI
+                                    filter_row
                                 ]
                             )
                         )
@@ -180,7 +164,7 @@ def search_view_screen(page: ft.Page):
                     ft.Container(height=70)
                 ],
                 expand=True,
-                scroll=ft.ScrollMode.AUTO
+                scroll=ft.ScrollMode.HIDDEN
             ),
             nav_bar(page, current_route="/searchview")
         ]

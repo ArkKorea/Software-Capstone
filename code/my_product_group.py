@@ -109,7 +109,7 @@ def my_product_group_screen(page: ft.Page):
                     ft.Container(height=70)
                 ],
                 expand=True,
-                scroll=ft.ScrollMode.AUTO
+                scroll=ft.ScrollMode.HIDDEN
             ),
 
             nav_bar(page, current_route="/myproductgroup")

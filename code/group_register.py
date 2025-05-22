@@ -186,7 +186,7 @@ def group_register_screen(page: ft.Page):
                         ),
                         image_error_text
                     ],
-                    scroll=ft.ScrollMode.AUTO
+                    scroll=ft.ScrollMode.HIDDEN
                 )
             )
         ]

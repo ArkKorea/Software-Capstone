@@ -23,10 +23,9 @@ def my_allergy_screen(page: ft.Page):
         selected = False
 
         container = ft.Container(
-            width=86,
             bgcolor=ft.Colors.LIGHT_GREEN_100,
             border_radius=12,
-            padding=ft.Padding(8, 8, 8, 8),  # ✅ 수정된 패딩
+            padding=ft.Padding(8, 8, 8, 8),
             content=ft.Column(
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 spacing=2,
@@ -44,42 +43,26 @@ def my_allergy_screen(page: ft.Page):
         def toggle_selection(e):
             nonlocal selected
             selected = not selected
-
             if selected:
                 selected_allergies.add(label)
                 container.bgcolor = ft.Colors.GREEN_300
             else:
                 selected_allergies.discard(label)
                 container.bgcolor = ft.Colors.LIGHT_GREEN_100
-
             container.update()
             update_allergy_count()
 
-        return ft.GestureDetector(
-            on_tap=toggle_selection,
-            content=container
-        )
+        return ft.GestureDetector(on_tap=toggle_selection, content=container)
 
-    allergy_grid = []
-    row = []
-    row_width = (86 * 4) + (12 * 3)
-
-    for i, (img_id, label) in enumerate(allergy_items, 1):
-        row.append(create_allergy_button(img_id, label))
-        if i % 4 == 0 or i == len(allergy_items):
-            is_last_row = i == len(allergy_items)
-            alignment = ft.MainAxisAlignment.START if is_last_row else ft.MainAxisAlignment.CENTER
-            allergy_grid.append(
-                ft.Container(
-                    width=row_width,
-                    content=ft.Row(
-                        row,
-                        spacing=12,
-                        alignment=alignment
-                    )
-                )
-            )
-            row = []
+    # ✅ 정확히 4개씩 배치되도록 설정
+    allergy_grid = ft.GridView(
+        max_extent=95,
+        child_aspect_ratio=1.1,
+        spacing=12,
+        run_spacing=12,
+        controls=[create_allergy_button(img_id, label) for img_id, label in allergy_items],
+        expand=False
+    )
 
     return ft.View(
         "/myallergy",
@@ -105,7 +88,7 @@ def my_allergy_screen(page: ft.Page):
             ),
             ft.Column(
                 expand=True,
-                scroll=ft.ScrollMode.AUTO,
+                scroll=ft.ScrollMode.HIDDEN,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 controls=[
                     ft.Container(height=20),
@@ -118,14 +101,13 @@ def my_allergy_screen(page: ft.Page):
                             alignment=ft.MainAxisAlignment.CENTER,
                             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                             spacing=5
-                        ),
-                        alignment=ft.Alignment(0, 0)
+                        )
                     ),
                     ft.Container(height=20),
-                    ft.Column(
-                        controls=allergy_grid,
-                        spacing=20,
-                        horizontal_alignment=ft.CrossAxisAlignment.CENTER
+                    # ✅ 좌우 여백 포함한 GridView
+                    ft.Container(
+                        padding=ft.Padding(top=0, bottom=0, left=20, right=20),
+                        content=allergy_grid
                     ),
                     ft.Container(height=30),
                 ]

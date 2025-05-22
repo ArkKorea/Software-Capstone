@@ -235,7 +235,7 @@ def sign_up_screen(page: ft.Page):
                 ],
                 alignment=ft.MainAxisAlignment.START,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                scroll=ft.ScrollMode.AUTO
+                scroll=ft.ScrollMode.HIDDEN
             )
         ]
     )

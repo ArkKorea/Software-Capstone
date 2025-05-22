@@ -61,14 +61,14 @@ Allert Sign(이하 "본 서비스")은 이용자의 개인정보를 보호하며
 6. 개인정보 보호 문의처
 
 담당 부서: Allert Sign 고객지원팀  
-이메일: support@allertsign.com  
-연락처: 010-xxxx-xxxx
+이메일: eogus117@naver.com
+연락처: 010-7167-9801
                             """,
                             size=14,
                             selectable=True
                         )
                     ],
-                    scroll=ft.ScrollMode.AUTO,
+                    scroll=ft.ScrollMode.HIDDEN,
                     expand=True
                 ),
                 padding=20,

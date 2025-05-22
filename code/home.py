@@ -20,7 +20,6 @@ def home_screen(page: ft.Page):
         )
         page.update()
 
-    # 🔄 드롭다운 대체: PopupMenuButton
     def change_filter(e):
         selected = e.control.text
         search_filter.current = selected
@@ -72,15 +71,18 @@ def home_screen(page: ft.Page):
                             ft.Container(width=10),
                             ft.Column([
                                 ft.Text("안녕하세요", size=20),
-                                ft.Text("홍길동님", size=25)
+                                ft.Text((page.client_storage.get("display_name") or "홍길동") + "님", size=25)
+
+
                             ])
                         ]),
                         padding=ft.Padding(10, 5, 10, 5)
                     ),
 
+
                     ft.Container(height=10),
 
-                    # 🔍 통합 검색창
+                    # 통합 검색창
                     ft.Container(
                         padding=ft.Padding(10, 20, 10, 20),
                         content=ft.Container(
@@ -109,7 +111,7 @@ def home_screen(page: ft.Page):
                                             border_radius=0
                                         )
                                     ),
-                                    filter_row  # ✅ 수정된 필터 UI
+                                    filter_row
                                 ]
                             )
                         )
@@ -149,7 +151,7 @@ def home_screen(page: ft.Page):
                                 category_button("내 알레르기", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_category_myallergy.png", "/myallergy"),
                             ],
                             spacing=10,
-                            scroll=ft.ScrollMode.ALWAYS,
+                            scroll=ft.ScrollMode.HIDDEN,  # ✅ 스크롤바 감추기
                             alignment=ft.MainAxisAlignment.START
                         )
                     ),
@@ -157,7 +159,7 @@ def home_screen(page: ft.Page):
                     ft.Container(height=70)
                 ],
                 expand=True,
-                scroll=ft.ScrollMode.AUTO
+                scroll=ft.ScrollMode.HIDDEN
             ),
             nav_bar(page, current_route="/home")
         ]

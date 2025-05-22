@@ -98,7 +98,7 @@ def today_symptom_screen(page: ft.Page):
             ),
             ft.Column(
                 expand=True,
-                scroll=ft.ScrollMode.AUTO,
+                scroll=ft.ScrollMode.HIDDEN,
                 controls=[
                     ft.Container(
                         padding=20,

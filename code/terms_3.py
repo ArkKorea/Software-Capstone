@@ -60,7 +60,7 @@ def terms_3_screen(page: ft.Page):
                             selectable=True
                         )
                     ],
-                    scroll=ft.ScrollMode.AUTO,
+                    scroll=ft.ScrollMode.HIDDEN,
                     expand=True
                 ),
                 padding=20,

@@ -120,7 +120,7 @@ def day_diet_screen(page: ft.Page, selected_date: date) -> ft.View:
                         *meal_list_controls,
                         ft.Container(height=20)
                     ],
-                    scroll=ft.ScrollMode.AUTO
+                    scroll=ft.ScrollMode.HIDDEN
                 )
             )
         ],

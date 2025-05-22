@@ -19,7 +19,7 @@ def diet_management_screen(page: ft.Page):
     current_year.current = today.year
     current_month.current = today.month
 
-    calendar_column = ft.Column()
+    calendar_column = ft.Column(spacing=6)
     month_title = ft.Text("", size=18, weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER)
 
     weekday_labels = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
@@ -27,13 +27,13 @@ def diet_management_screen(page: ft.Page):
 
     weekday_row = ft.Row(
         alignment=ft.MainAxisAlignment.SPACE_EVENLY,
+        tight=True,
         controls=[
             ft.Container(
+                expand=True,
                 content=ft.Text(day, size=14, color=color),
-                width=48,
-                height=50,
                 alignment=ft.Alignment(0, 0),
-                padding=ft.Padding(top=10, bottom=0, left=0, right=0)
+                padding=ft.Padding(left=0, top=20, right=0, bottom=20)  # 여백 넉넉히
             )
             for day, color in zip(weekday_labels, weekday_Colors)
         ]
@@ -53,7 +53,7 @@ def diet_management_screen(page: ft.Page):
             if week_index == 5 and not any(day.month == current_month.current for day in week_days):
                 continue
 
-            row = ft.Row(alignment=ft.MainAxisAlignment.SPACE_EVENLY, controls=[])
+            row = ft.Row(alignment=ft.MainAxisAlignment.SPACE_EVENLY, tight=True, controls=[])
             for day_index, date_obj in enumerate(week_days):
                 is_current_month = (date_obj.month == current_month.current)
                 is_today = (date_obj == today)
@@ -64,26 +64,23 @@ def diet_management_screen(page: ft.Page):
                     ft.Colors.BLACK
                 )
 
-                if is_today and is_current_month:
-                    content = ft.Container(
+                content = (
+                    ft.Container(
                         width=38,
                         height=28,
                         bgcolor=ft.Colors.GREEN,
                         border_radius=20,
                         alignment=ft.Alignment(0, 0),
                         content=ft.Text(str(date_obj.day), size=13, color=ft.Colors.WHITE)
-                    )
-                else:
-                    content = ft.Text(
-                        str(date_obj.day),
-                        size=13,
-                        color=number_color if is_current_month else ft.Colors.GREY
-                    )
+                    ) if is_today and is_current_month else
+                    ft.Text(str(date_obj.day), size=13, color=number_color if is_current_month else ft.Colors.GREY)
+                )
 
                 day_container = ft.Container(
-                    width=48,
-                    height=60,
+                    expand=True,
+                    height=60,  # 날짜 셀 높이 고정
                     alignment=ft.Alignment(0, 0),
+                    padding=ft.Padding(left=4, top=6, right=4, bottom=6),
                     content=content,
                     on_click=lambda e, d=date_obj: on_day_clicked(d)
                 )
@@ -134,7 +131,7 @@ def diet_management_screen(page: ft.Page):
                             ft.IconButton(icon=ft.Icons.KEYBOARD_ARROW_RIGHT, on_click=go_next_month),
                         ]
                     ),
-                    ft.Container(content=weekday_row, padding=ft.Padding(top=20, bottom=15, left=0, right=0)),
+                    ft.Container(content=weekday_row),
                     calendar_column,
                     ft.Container(
                         content=ft.ElevatedButton(
@@ -143,16 +140,17 @@ def diet_management_screen(page: ft.Page):
                                 shape=ft.RoundedRectangleBorder(radius=30),
                                 bgcolor=ft.Colors.GREEN,
                                 color=ft.Colors.WHITE,
-                                padding=ft.Padding(20, 10, 20, 10)
+                                padding=ft.Padding(left=20, top=10, right=20, bottom=10)
                             ),
                             on_click=lambda e: page.go(f"/adddiet?from=management&date={today.isoformat()}")
                         ),
-                        padding=20,
+                        padding=ft.Padding(left=20, top=40, right=20, bottom=20),
                         alignment=ft.Alignment(0, 0)
                     ),
                     ft.Container(height=60)
                 ],
                 expand=True,
+                scroll=ft.ScrollMode.AUTO,
                 alignment=ft.MainAxisAlignment.START,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER
             ),

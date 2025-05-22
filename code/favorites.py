@@ -106,7 +106,7 @@ def favorites_screen(page: ft.Page):
                     ft.Container(height=70)
                 ],
                 expand=True,
-                scroll=ft.ScrollMode.AUTO
+                scroll=ft.ScrollMode.HIDDEN
             ),
 
             # 하단 네비게이션 바

@@ -28,6 +28,8 @@ from day_diet import day_diet_screen
 from reset_password import reset_password_screen
 from history import history_screen
 from search_view import search_view_screen
+from notice import notice_screen
+from terms import terms_screen
 from datetime import date
 
 async def main(page: ft.Page):
@@ -38,7 +40,7 @@ async def main(page: ft.Page):
     page.clean()
     page.add(splash_content(page))
     await asyncio.sleep(2)
-    page.go("/login")
+    page.go("/home")
 
     def route_change(e):
         route = page.route.split("?")[0]
@@ -96,6 +98,10 @@ async def main(page: ft.Page):
             page.views.append(history_screen(page))
         elif route == "/searchview":
             page.views.append(search_view_screen(page))
+        elif route == "/notice":
+            page.views.append(notice_screen(page))
+        elif route == "/terms":
+            page.views.append(terms_screen(page))
         elif route == "/daydiet":
             date_str = qs.get("date", [None])[0]
             if date_str:

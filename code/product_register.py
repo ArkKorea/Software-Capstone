@@ -25,33 +25,20 @@ def product_register_screen(page: ft.Page):
     ]
 
     selected_allergies = set()
-    file_path = ft.Text("")
-
-    name_field = ft.TextField(label="제품명", border_radius=10, filled=True, fill_color=ft.Colors.GREY_100, dense=True)
-    supplier_field = ft.TextField(label="공급자명", border_radius=10, filled=True, fill_color=ft.Colors.GREY_100, dense=True)
-    ingredient_field = ft.TextField(label="전체 성분", multiline=True, min_lines=3, border_radius=10, filled=True, fill_color=ft.Colors.GREY_100, dense=True)
-
-    # 오류 메시지 텍스트
-    name_error = ft.Text("", color=ft.Colors.RED)
-    supplier_error = ft.Text("", color=ft.Colors.RED)
-    allergy_error = ft.Text("", color=ft.Colors.RED)
-    ingredient_error = ft.Text("", color=ft.Colors.RED)
-    file_error = ft.Text("", color=ft.Colors.RED)
-
-    file_picker = ft.FilePicker()
-    page.overlay.append(file_picker)
+    file_path = ft.Text()
 
     def build_allergy_chip(label, img_src):
         selected = False
-
         container = ft.Container(
-            width=80,
             bgcolor=ft.Colors.LIGHT_GREEN_100,
             border_radius=12,
-            padding=ft.Padding(6, 6, 6, 6),
+            padding=6,
+            height=80,  # ✅ 세로 길이 줄이기
+            alignment=ft.alignment.center,  # ✅ 컨테이너 내 정렬 중앙
             content=ft.Column(
+                alignment=ft.MainAxisAlignment.CENTER,  # ✅ 세로 방향 중앙 정렬
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                spacing=0,
+                spacing=4,
                 controls=[
                     ft.Image(src=img_src, width=24, height=24),
                     ft.Text(label, size=12, text_align=ft.TextAlign.CENTER)
@@ -72,22 +59,35 @@ def product_register_screen(page: ft.Page):
 
         return ft.GestureDetector(on_tap=toggle_selection, content=container)
 
-    allergy_rows = []
-    row = []
-    for i, (label, img) in enumerate(allergy_items, 1):
-        row.append(build_allergy_chip(label, img))
-        if i % 4 == 0 or i == len(allergy_items):
-            allergy_rows.append(ft.Row(row, spacing=10))
-            row = []
+
+    # ✅ GridView로 반응형 레이아웃 구현 (Wrap 미지원 대체)
+    allergy_grid = ft.GridView(
+        max_extent=100,
+        child_aspect_ratio=1.2,
+        spacing=10,
+        run_spacing=10,
+        controls=[build_allergy_chip(label, img) for label, img in allergy_items],
+        expand=False
+    )
+
+    file_picker = ft.FilePicker()
+    page.overlay.append(file_picker)
 
     def handle_file_result(e: ft.FilePickerResultEvent):
-        if e.files:
-            file_path.value = e.files[0].name
-        else:
-            file_path.value = ""
+        file_path.value = e.files[0].name if e.files else ""
         file_path.update()
 
     file_picker.on_result = handle_file_result
+
+    name_field = ft.TextField(label="제품명", border_radius=10, filled=True, fill_color=ft.Colors.GREY_100, dense=True)
+    supplier_field = ft.TextField(label="공급자명", border_radius=10, filled=True, fill_color=ft.Colors.GREY_100, dense=True)
+    ingredient_field = ft.TextField(label="전체 성분", multiline=True, min_lines=3, border_radius=10, filled=True, fill_color=ft.Colors.GREY_100, dense=True)
+
+    name_error = ft.Text("", color=ft.Colors.RED)
+    supplier_error = ft.Text("", color=ft.Colors.RED)
+    allergy_error = ft.Text("", color=ft.Colors.RED)
+    ingredient_error = ft.Text("", color=ft.Colors.RED)
+    file_error = ft.Text("", color=ft.Colors.RED)
 
     def validate_and_save(e):
         valid = True
@@ -122,11 +122,8 @@ def product_register_screen(page: ft.Page):
         else:
             file_error.value = ""
 
-        name_error.update()
-        supplier_error.update()
-        allergy_error.update()
-        ingredient_error.update()
-        file_error.update()
+        for msg in [name_error, supplier_error, allergy_error, ingredient_error, file_error]:
+            msg.update()
 
         if valid:
             print("저장됨:")
@@ -135,7 +132,6 @@ def product_register_screen(page: ft.Page):
             print("알레르기:", selected_allergies)
             print("성분:", ingredient_field.value)
             print("파일:", file_path.value)
-
             page.go("/productregistersuccess")
 
     return ft.View(
@@ -151,7 +147,7 @@ def product_register_screen(page: ft.Page):
                 ),
                 actions=[
                     ft.Container(
-                        margin=ft.Margin(top=0, bottom=0, left=0, right=10),
+                        margin=ft.Margin(left=0, top=0, right=10, bottom=0),
                         content=ft.TextButton(
                             "저장",
                             style=ft.ButtonStyle(bgcolor=ft.Colors.GREEN, color=ft.Colors.WHITE),
@@ -162,30 +158,25 @@ def product_register_screen(page: ft.Page):
             ),
             ft.Column(
                 expand=True,
+                scroll=ft.ScrollMode.HIDDEN,
                 controls=[
                     ft.Container(
-                        padding=ft.Padding(left=20, right=20, top=10, bottom=20),
-                        expand=True,
+                        padding=ft.Padding(left=20, top=20, right=20, bottom=30),
                         content=ft.Column(
-                            scroll=ft.ScrollMode.AUTO,
                             spacing=15,
                             controls=[
                                 step_text("STEP 1", "제품명 입력"),
                                 name_field,
                                 name_error,
-
                                 step_text("STEP 2", "공급자명 입력"),
                                 supplier_field,
                                 supplier_error,
-
                                 step_text("STEP 3", "알레르기 항목 선택"),
-                                *allergy_rows,
+                                allergy_grid,  # ✅ GridView 적용
                                 allergy_error,
-
                                 step_text("STEP 4", "전체 성분 입력"),
                                 ingredient_field,
                                 ingredient_error,
-
                                 step_text("STEP 5", "대표 이미지 업로드"),
                                 ft.ElevatedButton("파일 선택", icon=ft.Icons.UPLOAD_FILE, on_click=lambda _: file_picker.pick_files(allow_multiple=False)),
                                 file_path,
