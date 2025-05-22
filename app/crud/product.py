@@ -1,29 +1,31 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from app.models.models import Barcodes, QrLinks
 from app.models.food import Food
 from app.models.food_bundle import FoodBundle
 from app.models.supplier import Supplier
 from app.models.food_allergens import FoodAllergen
+from app.models.barcode import Barcode
+from app.models.qr_link import QrLink
 from app.schemas.product import ProductCreate
+
 
 from app.models.allergen import Allergen
 import datetime
 
 def get_product_by_barcode(barcode: str, db: Session):
-    return db.query(Food).filter(Food.barcode.any(Barcodes.code == barcode)).first()
+    return db.query(Food).filter(Food.barcode.has(Barcode.code == barcode)).first()
 
 def get_type_by_qrcode(qrcode: str, db: Session):
-    return db.query(QrLinks).filter(QrLinks.code == qrcode).first().type
+    return db.query(QrLink).filter(QrLink.code == qrcode).first().type
 
 def get_product_by_qrcode(qrcode: str, db: Session):
-    return db.query(Food).filter(Food.qr_link.any(QrLinks.code == qrcode)).first()
+    return db.query(Food).filter(Food.qr_link.has(QrLink.code == qrcode)).first()
 
 def get_bundle_by_qrcode(qrcode: str, db: Session):
-    return db.query(FoodBundle).filter(FoodBundle.qr_link.any(QrLinks.code == qrcode)).first()
+    return db.query(FoodBundle).filter(FoodBundle.qr_link.has(QrLink.code == qrcode)).first()
 
 def get_supplier_by_qrcode(qrcode: str, db: Session):
-    return db.query(Supplier).filter(Supplier.qr_link.any(QrLinks.code == qrcode)).first()
+    return db.query(Supplier).filter(Supplier.qr_link.has(QrLink.code == qrcode)).first()
 
 def get_product_by_id(product_id: int, db: Session):
     return db.query(Food).filter(Food.id == product_id).first()

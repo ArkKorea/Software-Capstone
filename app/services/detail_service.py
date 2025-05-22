@@ -18,7 +18,6 @@ def get_product_detail_service(db: Session, product_id: int, user: User) -> Prod
     user_allergen_names = {a.name for a in user.allergen} if user.role == RoleEnum.consumer else set()
     food_allergen_names = {a.name for a in food.allergen}
 
-    print("user_allergen_names", user.role)
     allergen_hit = list(user_allergen_names & food_allergen_names)
     allergen_safe = list(food_allergen_names - user_allergen_names)
 

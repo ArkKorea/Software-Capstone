@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Text
+from typing import List, Text, Optional
 from datetime import datetime, date
 
 class SuggestedProduct(BaseModel):
@@ -11,7 +11,7 @@ class SuggestedProduct(BaseModel):
 class MatchedProduct(BaseModel):
     product_id: int
     name: str
-    image_url: str
+    image_url: Optional[str] = None
     supplier_id: int
     supplier_name: str
 
@@ -36,7 +36,7 @@ class ConnectMealResponse(BaseModel):
 class Meal(BaseModel):
     datetime: datetime
     food_name: str
-    matched_product: MatchedProduct
+    matched_product: Optional[MatchedProduct] = None
     quantity: int
     memo: Text
 

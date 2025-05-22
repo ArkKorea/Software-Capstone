@@ -6,13 +6,12 @@ from app.crud.product import create_product
 from app.models.user import User
 
 from app.crud.product import *
-from app.core.auth import get_current_user
 from app.schemas.product import ProductResponse, BundleResponse, ProductCreateResponse, ProductUpdate, ProductDelete
 from app.models.food import Food
 from app.models.user import User
 from app.models.food_allergens import FoodAllergen
 from app.models.allergen import Allergen
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from sqlalchemy import delete
@@ -30,7 +29,6 @@ def decode_barcode(value: str, db: Session, user: User) -> ProductResponse:
 
 def decode_qrcode(value: str, db: Session, user: User) -> Union[ProductResponse, BundleResponse, RedirectResponse]:
     data_type = get_type_by_qrcode(value, db)
-
     if data_type == 'food':
         product = get_product_by_qrcode(value, db)
         if not product:

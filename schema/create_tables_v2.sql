@@ -149,6 +149,19 @@ CREATE TABLE symptoms_log (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- 14. 섭취기록
+CREATE TABLE intake_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    food_name VARCHAR(255),
+    food_id INT,
+    quantity INT,
+    memo TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (food_id) REFERENCES foods(id) ON DELETE CASCADE
+);
+
 ALTER TABLE foods
 ADD COLUMN registered_by_user_id INT NOT NULL,
 ADD CONSTRAINT fk_foods_users FOREIGN KEY (registered_by_user_id) REFERENCES users(id);

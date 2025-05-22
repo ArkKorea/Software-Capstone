@@ -1,7 +1,6 @@
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
 from rapidfuzz.fuzz import ratio
-from app.core.auth import get_current_user
 from app.schemas.meal import *
 from app.models.user import User
 from app.crud.meal import *
@@ -10,7 +9,7 @@ from datetime import datetime
 
 TOP_N = 3
 
-def create_intake_log(request: CreateMealRequest, db: Session, user: User = Depends(get_current_user))  -> CreateMealResponse:
+def create_intake_log(request: CreateMealRequest, db: Session, user: User)  -> CreateMealResponse:
     if not isinstance(request.datetime, datetime):
         raise HTTPException(status_code=400, detail="시간 형식이 올바르지 않습니다.")
     
@@ -35,13 +34,13 @@ def create_intake_log(request: CreateMealRequest, db: Session, user: User = Depe
             suggested_products= make_suggested_products(similar_score, db)
         )
 
-def connect_intake_log(request: ConnectMealRequest, db: Session, current_user: User = Depends(get_current_user)) -> ConnectMealResponse:
+def connect_intake_log(request: ConnectMealRequest, db: Session, current_user: User) -> ConnectMealResponse:
     update_intake_log(request, db, current_user.id)
     return ConnectMealResponse(
         message= "상품 연동이 완료되었습니다."
     )
 
-def query_intake_log(request: QueryMealRequest, db: Session, current_user: User = Depends(get_current_user)) -> QueryMealResponse:
+def query_intake_log(request: QueryMealRequest, db: Session, current_user: User) -> QueryMealResponse:
     logs = select_intake_log(request.date, db, current_user.id)
     if not logs:
         raise HTTPException(status_code=404, detail="해당 날짜에 기록된 식사가 없습니다.")
@@ -54,10 +53,9 @@ def query_intake_log(request: QueryMealRequest, db: Session, current_user: User 
             matched_product=MatchedProduct(
                 product_id=matched_product.id,
                 name=matched_product.name,
-                image_url=matched_product.image_url,
+                image_url=matched_product.image_url or "",
                 supplier_id=matched_product.supplier_id,
-                supplier_name=matched_product.supplier.name
-            ),
+                supplier_name=matched_product.supplier.name) if matched_product else None,
             quantity=log.quantity,
             memo=log.memo
         ))

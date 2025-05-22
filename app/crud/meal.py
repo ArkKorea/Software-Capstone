@@ -32,7 +32,7 @@ def make_suggested_products(data: List[Tuple[int, float]], db: Session) -> List[
         foods.append(SuggestedProduct(
             product_id=food.id,
             name=food.name,
-            image_url=food.image_url,
+            image_url=food.image_url or "",
             match_score=score
         ))
     return foods

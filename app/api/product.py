@@ -26,7 +26,7 @@ def code_scanner(request: ProductRequest,
                             detail="유효하지 않은 요청 타입입니다. 'barcode' 또는 'qrcode'를 입력해주세요.")
 
 # 내 상품 등록
-@router.post("/supplier/products/create", response_model=ProductCreateResponse)
+@router.post("/create", response_model=ProductCreateResponse)
 def create_product(
     request: ProductCreate,
     db: Session = Depends(get_db),
@@ -35,7 +35,7 @@ def create_product(
     return create_product_service(db, request, current_user)
 
 # 내 상품 조회
-@router.post("/api/supplier/products/list", response_model=list[ProductResponse])
+@router.post("/list", response_model=list[ProductResponse])
 def get_my_products(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -43,7 +43,7 @@ def get_my_products(
     return get_my_products_service(db, current_user)
 
 # 내 상품 수정
-@router.post("/api/supplier/products/update")
+@router.post("/update")
 def update_product(
     request: ProductUpdate,
     db: Session = Depends(get_db),
@@ -52,7 +52,7 @@ def update_product(
     return update_product_service(db, request, current_user)
 
 # 내 상품 삭제
-@router.post("/api/supplier/products/delete")
+@router.post("/delete")
 def delete_product(
     request: ProductDelete,
     db: Session = Depends(get_db),
