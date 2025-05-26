@@ -8,7 +8,7 @@ from app.services.bundle import create_bundle_service, get_my_bundles_service, u
 router = APIRouter()
 
 # 번들 생성
-@router.post("/api/supplier/groups/create")
+@router.post("/create")
 def create_bundle(
     request: BundleCreate,
     db: Session = Depends(get_db),
@@ -16,7 +16,7 @@ def create_bundle(
 ):
     return create_bundle_service(db, request, current_user)
 
-@router.post("/api/supplier/groups/list", response_model=BundleListResponse)
+@router.post("/list", response_model=BundleListResponse)
 def list_my_bundles(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
@@ -24,7 +24,7 @@ def list_my_bundles(
     return get_my_bundles_service(db, current_user)
 
 # 번들 수정
-@router.post("/api/supplier/groups/update")
+@router.post("/update")
 def update_bundle(
     request: BundleUpdate,
     db: Session = Depends(get_db),
@@ -33,7 +33,7 @@ def update_bundle(
     return update_bundle_service(db, request, current_user)
 
 # 번들 삭제
-@router.post("/api/supplier/groups/delete")
+@router.post("/delete")
 def delete_bundle(
     request: BundleDelete,
     db: Session = Depends(get_db),
