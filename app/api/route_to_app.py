@@ -1,20 +1,19 @@
-from fastapi import FastAPI, Request
+from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import RedirectResponse
-from fastapi import HTTPException
 
-app = FastAPI()
+router = APIRouter()
 
-PACKAGE_NAME = " " # 내 애플리케이션 패키지 이름름
+PACKAGE_NAME = ""  # 앱 패키지 이름
 FALLBACK_URL = f"https://play.google.com/store/apps/details?id={PACKAGE_NAME}"
 
-@app.get("/route-to-app")
+@router.get("/route-to-app")
 def route_to_app(type: str, id: int, request: Request):
     user_agent = request.headers.get("user-agent", "").lower()
 
     if type not in ("product", "bundle", "supplier"):
         raise HTTPException(status_code=400, detail="유효하지 않은 type")
 
-    scheme_path = f"{type}/{id}"  # 예: product/42
+    scheme_path = f"{type}/{id}" 
 
     if "android" in user_agent:
         intent_url = (
