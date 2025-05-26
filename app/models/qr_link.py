@@ -15,9 +15,9 @@ class QrLink(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     code: Mapped[str] = mapped_column(String(255), nullable=False)
     type: Mapped[typeEnum]
-    food_id: Mapped[int] = mapped_column(ForeignKey("foods.id"), nullable=False)
-    bundle_id: Mapped[int] = mapped_column(ForeignKey("food_bundles.id"), nullable=False)
-    supplier_id: Mapped[int] = mapped_column(ForeignKey("suppliers.id"), nullable=False)
+    food_id: Mapped[int] = mapped_column(ForeignKey("foods.id"), nullable=True)
+    bundle_id: Mapped[int] = mapped_column(ForeignKey("food_bundles.id"), nullable=True)
+    supplier_id: Mapped[int] = mapped_column(ForeignKey("suppliers.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     bundle = relationship("FoodBundle", back_populates="qr_link")
