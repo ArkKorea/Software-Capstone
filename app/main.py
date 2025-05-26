@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from app.api import allergen, auth, product, search, favorite, symptom, meal, detail, bundle, route_to_app
 
+
 import app.models
 from app.models.base import Base
 
