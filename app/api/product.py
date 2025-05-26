@@ -11,14 +11,13 @@ from app.models.user import User
 router = APIRouter()
 
 @router.post("/from-code", response_model=Union[ProductResponse, BundleResponse])
-
 def code_scanner(request: ProductRequest,
                  db: Session = Depends(get_db),
                  current_user: User = Depends(get_current_user)):
   
     code_type = request.type
     if code_type == "barcode":
-        return decode_barcode(request.value, db, current_user)
+        return decode_barcode(request.value, db)
     elif code_type == "qrcode":
         return decode_qrcode(request.value, db, current_user)
     else:

@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api import allergen, auth, product, search, favorite, symptom, meal
+from app.api import allergen, auth, product, search, favorite, symptom, meal, detail
 
 import app.models
 from app.models.base import Base
@@ -15,3 +15,4 @@ app.include_router(search.router, prefix="/api", tags=["Search"])
 app.include_router(allergen.router, prefix="/api/user/allergies", tags=["Allergies"])
 app.include_router(symptom.router, prefix="/api/user/symptoms", tags=["Symptoms"])
 app.include_router(meal.router, prefix="/api/user/meals", tags=["Meals"])
+app.include_router(detail.router, prefix="/api/detail", tags=["Detail"])

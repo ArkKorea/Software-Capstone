@@ -7,6 +7,7 @@ from app.models.user import User
 
 from app.crud.product import *
 from app.schemas.product import ProductResponse, BundleResponse, ProductCreateResponse, ProductUpdate, ProductDelete
+from app.schemas.supplier import SupplierDetailResponse
 from app.models.food import Food
 from app.models.user import User
 from app.models.food_allergens import FoodAllergen
@@ -21,31 +22,31 @@ from app.services.detail_service import get_bundle_detail_service, get_product_d
 UPLOAD_DIR = "app/static/images/products" # 로컬 테스트 용도
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-def decode_barcode(value: str, db: Session, user: User) -> ProductResponse:
+def decode_barcode(value: str, db: Session) -> RedirectResponse:
     product = get_product_by_barcode(value, db)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    return get_product_detail_service(db, product.id, user)
+    return RedirectResponse(url=f"/api/detail/product/{product.id}", status_code=303)
 
-def decode_qrcode(value: str, db: Session, user: User) -> Union[ProductResponse, BundleResponse, RedirectResponse]:
+def decode_qrcode(value: str, db: Session) -> RedirectResponse:
     data_type = get_type_by_qrcode(value, db)
     if data_type == 'food':
         product = get_product_by_qrcode(value, db)
         if not product:
             raise HTTPException(status_code=404, detail="Product not found")
-        return get_product_detail_service(db, product.id, user)
+        return RedirectResponse(url=f"/api/detail/product/{product.id}", status_code=303)
 
     elif data_type == 'bundle':
         bundle = get_bundle_by_qrcode(value, db)
         if not bundle:
             raise HTTPException(status_code=404, detail="Product not found")
-        return get_bundle_detail_service(db, bundle.id, user)
+        return RedirectResponse(url=f"/api/detail/bundle/{bundle.id}", status_code=303)
 
     elif data_type == 'supplier':
         supplier = get_supplier_by_qrcode(value, db)
         if not supplier:
             raise HTTPException(status_code=404, detail="등록된 매장이 없습니다.")
-        return RedirectResponse(url=f"/supplier/{supplier.id}")
+        return RedirectResponse(url=f"/api/detail/supplier/{supplier.id}", status_code=303)
 
     else:
         raise HTTPException(status_code=400, detail="유효하지 않은 요청 타입입니다. 'barcode' 또는 'qrcode'를 입력해주세요.")
