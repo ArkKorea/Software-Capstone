@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.crud.search import *
 from .detail_service import get_product_detail_service, get_bundle_detail_service
-from .product_service import build_product_response
 from app.models.user import User
 
 
@@ -20,14 +19,16 @@ def search_product(request: SearchRequest, db: Session, current_user: User) -> S
         bundle_allergen_hit = []
         bundle_allergen_safe = []
 
+        user_allergen_ids = [allergen.id for allergen in current_user.allergen]
+        print(f"user_allergen_ids: {user_allergen_ids}")
         for product in bundle.items:
-            bundle_allergen_hit += [a.name for a in product.allergen if a.id in current_user.allergen]
-            bundle_allergen_safe += [a.name for a in product.allergen if a.id not in current_user.allergen]
+            bundle_allergen_hit += [a.name for a in product.allergen if a.id in user_allergen_ids]
+            bundle_allergen_safe += [a.name for a in product.allergen if a.id not in user_allergen_ids]
+
+        bundle_allergen_hit = list(set(bundle_allergen_hit))
+        bundle_allergen_safe = list(set(bundle_allergen_safe))
         
-        list(set(bundle_allergen_hit))
-        list(set(bundle_allergen_safe))
-        
-        return_value.bundles.append(Bundle(bundle_id=bundle.id, name=bundle.name, image_url=bundle.image_url,
+        return_value.bundles.append(Bundle(bundle_id=bundle.id, name=bundle.name, image_url=bundle.image_url or "",
                                            allergen_hit=bundle_allergen_hit, allergen_safe=bundle_allergen_safe,
                                            supplier_id=bundle.supplier.id, supplier_name=bundle.supplier.name))
     return return_value
