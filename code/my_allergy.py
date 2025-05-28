@@ -1,5 +1,8 @@
 import flet as ft
 from nav_bar import nav_bar
+import httpx
+from config import BASE_URL
+import app_state
 
 def my_allergy_screen(page: ft.Page):
     allergy_items = [
@@ -12,7 +15,18 @@ def my_allergy_screen(page: ft.Page):
         ("home_myallergy_soybean", "대두")
     ]
 
-    selected_allergies = set()
+    with httpx.Client(base_url=BASE_URL) as client:
+        response = client.post("/api/user/allergies/get", 
+                               headers={"Authorization": f"Bearer {app_state.access_token}"})
+        if response.status_code == 200:
+            data = response.json()
+            user_allergies = data["allergies"]
+
+    if user_allergies:
+        selected_allergies = set(user_allergies)
+    else:
+        selected_allergies = set()
+
     allergy_count_text = ft.Text(f"알  레  르  기   :   {len(selected_allergies)}  개", size=18, text_align=ft.TextAlign.CENTER)
 
     def update_allergy_count():
@@ -20,10 +34,12 @@ def my_allergy_screen(page: ft.Page):
         allergy_count_text.update()
 
     def create_allergy_button(image_id, label):
-        selected = False
+        selected = label in user_allergies
+        if selected:
+            selected_allergies.add(label)
 
         container = ft.Container(
-            bgcolor=ft.Colors.LIGHT_GREEN_100,
+            bgcolor=ft.Colors.GREEN_300 if selected else ft.Colors.LIGHT_GREEN_100,
             border_radius=12,
             padding=ft.Padding(8, 8, 8, 8),
             content=ft.Column(
@@ -64,6 +80,18 @@ def my_allergy_screen(page: ft.Page):
         expand=False
     )
 
+    def save_allergies(selected_allergies):
+        with httpx.Client(base_url=BASE_URL) as client:
+            response = client.post(
+                "/api/user/allergies/save",
+                headers={"Authorization": f"Bearer {app_state.access_token}"},
+                json={"allergies": list(selected_allergies)}
+            )
+            if response.status_code == 200:
+                print("알레르기 정보가 성공적으로 저장되었습니다.")
+            else:
+                print("알레르기 정보 저장에 실패했습니다.")
+
     return ft.View(
         "/myallergy",
         controls=[
@@ -81,7 +109,7 @@ def my_allergy_screen(page: ft.Page):
                         content=ft.TextButton(
                             "저장",
                             style=ft.ButtonStyle(bgcolor=ft.Colors.GREEN, color=ft.Colors.WHITE),
-                            on_click=lambda _: print("선택된 알레르기 항목:", selected_allergies)
+                            on_click=lambda _: save_allergies(selected_allergies)
                         )
                     )
                 ]
