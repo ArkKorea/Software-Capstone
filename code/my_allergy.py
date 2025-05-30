@@ -70,7 +70,6 @@ def my_allergy_screen(page: ft.Page):
 
         return ft.GestureDetector(on_tap=toggle_selection, content=container)
 
-    # ✅ 정확히 4개씩 배치되도록 설정
     allergy_grid = ft.GridView(
         max_extent=95,
         child_aspect_ratio=1.1,
@@ -80,6 +79,21 @@ def my_allergy_screen(page: ft.Page):
         expand=False
     )
 
+    # ✅ 저장 팝업(AlertDialog)
+    save_dialog = ft.AlertDialog(
+        modal=True,
+        title=ft.Text(""),
+        content=ft.Text(""),
+        actions=[ft.TextButton("확인", on_click=lambda e: close_dialog())],
+        actions_alignment=ft.MainAxisAlignment.END
+    )
+
+    def close_dialog():
+        save_dialog.open = False
+        page.update()
+
+    page.overlay.append(save_dialog)
+
     def save_allergies(selected_allergies):
         with httpx.Client(base_url=BASE_URL) as client:
             response = client.post(
@@ -88,9 +102,14 @@ def my_allergy_screen(page: ft.Page):
                 json={"allergies": list(selected_allergies)}
             )
             if response.status_code == 200:
-                print("알레르기 정보가 성공적으로 저장되었습니다.")
+                save_dialog.title = ft.Text("성공")
+                save_dialog.content = ft.Text("✅ 알레르기 정보가 성공적으로 저장되었습니다.")
             else:
-                print("알레르기 정보 저장에 실패했습니다.")
+                save_dialog.title = ft.Text("실패")
+                save_dialog.content = ft.Text("❌ 알레르기 정보 저장에 실패했습니다.")
+            save_dialog.open = True
+            page.dialog = save_dialog
+            page.update()
 
     return ft.View(
         "/myallergy",
@@ -132,7 +151,6 @@ def my_allergy_screen(page: ft.Page):
                         )
                     ),
                     ft.Container(height=20),
-                    # ✅ 좌우 여백 포함한 GridView
                     ft.Container(
                         padding=ft.Padding(top=0, bottom=0, left=20, right=20),
                         content=allergy_grid
