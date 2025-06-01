@@ -2,7 +2,9 @@ import flet as ft
 from datetime import date
 from urllib.parse import urlparse, parse_qs
 from nav_bar import nav_bar
-
+from config import BASE_URL
+import app_state
+import httpx
 SYMPTOM_CATEGORIES = ["피부", "복통", "호흡", "두통", "피로"]
 
 def today_symptom_screen(page: ft.Page):
@@ -44,6 +46,22 @@ def today_symptom_screen(page: ft.Page):
                 has_error = True
             else:
                 error_msgs[s] = ""
+        with httpx.Client(base_url=BASE_URL) as client:
+            response = client.post(
+                "/api/user/symptoms/save",
+                headers={"Authorization": f"Bearer {app_state.access_token}"},
+                json={
+                    "date": selected_date.isoformat(),
+                    "skin": ratings["피부"],
+                    "stomach": ratings["복통"],
+                    "breath": ratings["호흡"],
+                    "headache": ratings["두통"],
+                    "fatigue": ratings["피로"],  
+                }
+            )
+            if response.status_code == 200:
+                has_error = False
+            else: result_text.value = "❌ 증상 저장에 실패했습니다. 다시 시도해주세요."
         result_text.value = "" if has_error else "증상이 저장되었습니다."
         refresh_symptom_ui()
 
