@@ -2,6 +2,9 @@ import flet as ft
 from datetime import datetime, date
 from urllib.parse import urlparse, parse_qs
 from nav_bar import nav_bar
+from config import BASE_URL
+import httpx
+import app_state
 
 def add_diet_screen(page: ft.Page):
     # --- [1] URL에서 날짜 파라미터 파싱 ---
@@ -79,6 +82,19 @@ def add_diet_screen(page: ft.Page):
             page.update()
 
     def save_diet(e):
+        with httpx.Client(base_url=BASE_URL) as client:
+            response = client.post(
+                "/api/user/meals/create",
+                headers={"Authorization": f"Bearer {app_state.access_token}"},
+                json={
+                    "date": f"{selected_date.current.isoformat()}T{strftime_safe(selected_time.current, '%H:%M:%S')}",
+                    "food_name": added_foods[0], # 이건 변수가 리스트가 아니게 되면 될 것 같아요요
+                    "quantity": 1, # 양을 저장할 변수 및 ui 필요요
+                    "memo": None # 메모 ui가 필요
+                }
+            )
+            if response.status_code == 200:
+                print("식단이 성공적으로 저장되었습니다.")
         print(f"[저장됨] 날짜: {selected_date.current}, 시간: {strftime_safe(selected_time.current, '%H:%M')}, 식단: {added_foods}")
         page.go(f"/dietmanagement?date={selected_date.current.isoformat()}")
 
