@@ -116,16 +116,41 @@ def add_diet_screen(page: ft.Page):
                 "/api/user/meals/create",
                 headers={"Authorization": f"Bearer {app_state.access_token}"},
                 json={
-                    "date": f"{selected_date.current.isoformat()}T{strftime_safe(selected_time.current, '%H:%M:%S')}",
+                    "datetime": f"{selected_date.current.isoformat()}T{strftime_safe(selected_time.current, '%H:%M:%S')}",
                     "food_name": food_name,
                     "quantity": quantity,
                     "memo": memo
                 }
             )
             if response.status_code == 200:
-                print("식단이 성공적으로 저장되었습니다.")
+                data = response.json()
+                record_id  = data["record_id"]
+                suggested_products = data["suggested_products"]
+                match_product_id = 0
+                """
+                suggested_product 형태는 아래와  같습니다.
+                    product_id : int
+                    name: str
+                    image_url: Optional[str] = None
+                    match_score: float
+                위 형태를 가진 json 리스트입니다. 총 3개가 반환됩니다.
+                해당 리스트 3개 중 하나를 선택할 수 있는 팝업이 필요합니다.
+                선택이 된 상품의 아이디가 match_product_id에 저장되도록 부탁드립니다!
+                해당 팝업에는 상품을 선택할 건지 아니면 선택하지 않을 건지에 대한 두 선택지 버튼이 존재해야합니다.
+                """
+                if match_product_id != 0:
+                    response = client.post(
+                        "/api/user/meals/select-product",
+                        headers={"Authorization": f"Bearer {app_state.access_token}"},
+                        json={
+                            "record_id": record_id,
+                            "matched_product_id": match_product_id
+                        }
+                    )
+                    if response.status_code == 200:
+                        pass
+                        #여기에는 식단 저장이 완료되었다는 팝업 출력이 들어가야 합니다.
 
-        print(f"[저장됨] 날짜: {selected_date.current}, 시간: {strftime_safe(selected_time.current, '%H:%M')}, 음식: {food_name}, 식사량: {quantity}, 메모: {memo}")
         page.go(f"/dietmanagement?date={selected_date.current.isoformat()}")
 
     # --- [5] 뒤로가기 버튼 핸들러 ---
