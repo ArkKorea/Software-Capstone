@@ -18,7 +18,6 @@ def today_symptom_screen(page: ft.Page):
     ratings = {s: 0 for s in SYMPTOM_CATEGORIES}
     error_msgs = {s: "" for s in SYMPTOM_CATEGORIES}
     result_text = ft.Text("")
-    others_input = ft.TextField(hint_text="Tell us everything.", multiline=True, width=400)
 
     # 상위 컨테이너 안에 전체 증상 평가 영역이 들어감
     symptom_column = ft.Column(spacing=20)
@@ -77,8 +76,6 @@ def today_symptom_screen(page: ft.Page):
                 )
             )
         ui_list.extend([
-            ft.Text("기타 증상", size=16, weight=ft.FontWeight.BOLD),
-            others_input,
             ft.ElevatedButton("저장 하기", on_click=on_submit, bgcolor=ft.Colors.GREEN, color=ft.Colors.WHITE, width=400),
             result_text
         ])
