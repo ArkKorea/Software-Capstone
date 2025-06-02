@@ -150,6 +150,12 @@ def add_diet_screen(page: ft.Page):
                     if response.status_code == 200:
                         pass
                         #여기에는 식단 저장이 완료되었다는 팝업 출력이 들어가야 합니다.
+                    else:
+                        #상품 연동 실패 처리
+                        pass
+                else:
+                    pass
+                    #여기에는 식단 저장이 완료되었다는 팝업 출력이 들어가야 합니다.
 
         page.go(f"/dietmanagement?date={selected_date.current.isoformat()}")
 
