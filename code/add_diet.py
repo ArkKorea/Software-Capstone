@@ -19,15 +19,40 @@ def add_diet_screen(page: ft.Page):
     selected_time = ft.Ref[datetime.time]()
     selected_time.current = datetime.now().time()
 
-    # --- [2] 입력 및 UI 구성 요소 ---
+    # --- [2] 입력 UI 요소 정의 ---
     food_input = ft.TextField(
         hint_text="음식명",
         expand=True,
         bgcolor=ft.Colors.GREY_100,
         border_radius=8
     )
-    added_foods = []
-    food_list_view = ft.Column()
+
+    food_error_text = ft.Text("", size=12, color=ft.Colors.RED)
+
+    quantity_value = ft.Text("1", size=14, weight=ft.FontWeight.BOLD, color=ft.Colors.GREEN)
+
+    def on_quantity_change(e):
+        quantity_value.value = str(int(quantity_slider.value))
+        page.update()
+
+    quantity_slider = ft.Slider(
+        min=1,
+        max=5,
+        divisions=4,
+        value=1,
+        width=300,
+        label="{value}",
+        on_change=on_quantity_change
+    )
+
+    memo_input = ft.TextField(
+        hint_text="메모 (선택 사항)",
+        multiline=True,
+        max_lines=3,
+        bgcolor=ft.Colors.GREY_100,
+        border_radius=8,
+        expand=True
+    )
 
     date_text = ft.Text(
         strftime_safe(selected_date.current, "%b %d, %Y"),
@@ -40,7 +65,7 @@ def add_diet_screen(page: ft.Page):
         color=ft.Colors.GREEN
     )
 
-    # --- [3] 날짜/시간 선택기 및 핸들러 ---
+    # --- [3] 날짜/시간 선택기 ---
     def on_date_change(e):
         if date_picker.value:
             selected_date.current = date_picker.value
@@ -73,29 +98,34 @@ def add_diet_screen(page: ft.Page):
 
     page.overlay.extend([date_picker, time_picker])
 
-    # --- [4] 추가 & 저장 버튼 핸들러 ---
-    def add_food(e):
-        if food_input.value.strip():
-            added_foods.append(food_input.value.strip())
-            food_list_view.controls.append(ft.Text(food_input.value.strip(), size=14))
-            food_input.value = ""
-            page.update()
-
+    # --- [4] 저장 버튼 핸들러 ---
     def save_diet(e):
+        food_name = food_input.value.strip()
+        quantity = int(quantity_slider.value)
+        memo = memo_input.value.strip() or None
+
+        if not food_name:
+            food_error_text.value = "필수 체크 항목입니다."
+            page.update()
+            return
+        else:
+            food_error_text.value = ""
+
         with httpx.Client(base_url=BASE_URL) as client:
             response = client.post(
                 "/api/user/meals/create",
                 headers={"Authorization": f"Bearer {app_state.access_token}"},
                 json={
                     "date": f"{selected_date.current.isoformat()}T{strftime_safe(selected_time.current, '%H:%M:%S')}",
-                    "food_name": added_foods[0], # 이건 변수가 리스트가 아니게 되면 될 것 같아요요
-                    "quantity": 1, # 양을 저장할 변수 및 ui 필요요
-                    "memo": None # 메모 ui가 필요
+                    "food_name": food_name,
+                    "quantity": quantity,
+                    "memo": memo
                 }
             )
             if response.status_code == 200:
                 print("식단이 성공적으로 저장되었습니다.")
-        print(f"[저장됨] 날짜: {selected_date.current}, 시간: {strftime_safe(selected_time.current, '%H:%M')}, 식단: {added_foods}")
+
+        print(f"[저장됨] 날짜: {selected_date.current}, 시간: {strftime_safe(selected_time.current, '%H:%M')}, 음식: {food_name}, 식사량: {quantity}, 메모: {memo}")
         page.go(f"/dietmanagement?date={selected_date.current.isoformat()}")
 
     # --- [5] 뒤로가기 버튼 핸들러 ---
@@ -141,25 +171,22 @@ def add_diet_screen(page: ft.Page):
                             ]
                         ),
                         ft.Divider(height=16),
-                        ft.Text("식단 입력", size=16),
+                        ft.Text("식단명", size=16),
+                        food_input,
+                        food_error_text,
+                        ft.Divider(height=16),
+                        ft.Text("식사량 (1~5)", size=16),
                         ft.Row(
-                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                            alignment=ft.MainAxisAlignment.START,
                             vertical_alignment=ft.CrossAxisAlignment.CENTER,
                             controls=[
-                                food_input,
-                                ft.TextButton(
-                                    text="추가하기",
-                                    style=ft.ButtonStyle(
-                                        bgcolor=ft.Colors.GREEN_100,
-                                        color=ft.Colors.GREEN,
-                                        shape=ft.RoundedRectangleBorder(radius=10),
-                                        padding=ft.Padding(12, 6, 12, 6)
-                                    ),
-                                    on_click=add_food
-                                )
+                                quantity_slider,
+                                quantity_value
                             ]
                         ),
-                        ft.Column([food_list_view], spacing=4),
+                        ft.Divider(height=16),
+                        ft.Text("메모 (선택)", size=16),
+                        memo_input,
                         ft.Container(expand=True),
                         ft.Row(
                             alignment=ft.MainAxisAlignment.CENTER,
