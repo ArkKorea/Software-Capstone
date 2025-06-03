@@ -52,11 +52,11 @@ def today_symptom_screen(page: ft.Page):
                 if response.status_code == 200:
                     data = response.json()
                     if data:
-                        ratings["피부"] = data["skin"]
-                        ratings["복통"] = data["stomach"]
-                        ratings["호흡"] = data["breath"]
-                        ratings["두통"] = data["headache"]
-                        ratings["피로"] = data["fatigue"]
+                        ratings["피부"] = data["skin"] or 0
+                        ratings["복통"] = data["stomach"] or 0
+                        ratings["호흡"] = data["breath"] or 0
+                        ratings["두통"] = data["headache"] or 0
+                        ratings["피로"] = data["fatigue"] or 0
         except Exception as e:
             print(e)
 
