@@ -1,5 +1,7 @@
 import re
 import flet as ft
+import httpx
+from config import BASE_URL
 
 def is_valid_email(email):
     return re.match(r"[^@]+@[^@]+\.[^@]+", email)
@@ -103,8 +105,46 @@ def sign_up_screen(page: ft.Page):
 
     def go_to_verification(e):
         update_register_button()
-        if not register_button.disabled:
-            page.go(f"/emailverificationsent?email={email.value}")
+        if register_button.disabled:
+            return
+
+        try:
+            with httpx.Client() as client:
+                response = client.post(
+                    f"{BASE_URL}/api/auth/register",
+                    json={
+                        "email": email.value,
+                        "password": password.value,
+                        "birthdate": birth.value,
+                        "agree_personal_info": terms_2.value  # 약관 동의 2번 항목만 전달
+                    },
+                    headers={"Content-Type": "application/json"}
+                )
+
+            if response.status_code == 200:
+                # 회원가입 성공 → 인증메일 발송 화면으로 이동
+                page.go(f"/emailverificationsent?email={email.value}")
+            else:
+                # 서버에서 실패 메시지를 보낸 경우 처리
+                try:
+                    error_data = response.json()
+                    server_message = error_data.get("detail", "회원가입에 실패했습니다.")
+                    if isinstance(server_message, list):
+                        server_message = server_message[0].get("msg", "회원가입에 실패했습니다.")
+                except Exception:
+                    server_message = "회원가입에 실패했습니다."
+
+                dialog_modal.title = ft.Text("회원가입 실패", weight=ft.FontWeight.BOLD)
+                dialog_modal.content = ft.Text(server_message)
+                dialog_modal.open = True
+                page.update()
+
+        except Exception as ex:
+            print("회원가입 요청 중 예외 발생:", ex)
+            dialog_modal.title = ft.Text("오류", weight=ft.FontWeight.BOLD)
+            dialog_modal.content = ft.Text("서버와 통신 중 오류가 발생했습니다.")
+            dialog_modal.open = True
+            page.update()
 
     def terms_all_changed(e):
         terms_1.value = terms_all.value
