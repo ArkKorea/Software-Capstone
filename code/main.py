@@ -32,6 +32,7 @@ from notice import notice_screen
 from terms import terms_screen
 from datetime import date
 
+
 async def main(page: ft.Page):
     page.title = "ALLERT SIGN"
     page.theme_mode = ft.ThemeMode.LIGHT
