@@ -1,15 +1,13 @@
 import flet as ft
 from nav_bar import nav_bar
+from config import BASE_URL
+import app_state
+import httpx
 
 def search_view_screen(page: ft.Page):
     search_filter = ft.Ref[str]()
     search_filter.current = "제품명"
     recent_searches = []
-
-    dummy_db = {
-        "매장명": ["쉐프공방", "헬씨키친", "비건레스토랑"],
-        "제품명": ["알러지프리쿠키", "무유제품빵", "콩단백스낵"]
-    }
 
     search_result = ft.Column(
         controls=[
@@ -79,21 +77,48 @@ def search_view_screen(page: ft.Page):
 
         update_recent_searches()
 
-        category = search_filter.current
-        matched = [item for item in dummy_db[category] if keyword in item]
-
-        if matched:
-            search_result.controls = [ft.Text(item, size=16) for item in matched]
-        else:
-            search_result.controls = [
+        category = "product" if search_filter.current == "제품명" else "store"
+        
+        with httpx.Client(base_url=BASE_URL) as client:
+            response = client.post(
+                "/api/search",
+                headers={"Authorization": f"Bearer {app_state.access_token}"},
+                json={
+                    "type": category,
+                    "query": keyword
+                }
+            )
+            if response.status_code == 200:
+                if category == "product":
+                    matched = response.json()
+                    matched_products = matched["products"]
+                    if matched_products:
+                        search_result.controls = [ft.Text(item["name"], size=16) for item in matched_products]
+                    matched_bundles = matched["bundles"]
+                    if matched_bundles:
+                        search_result.controls = search_result.controls + [ft.Text(item["name"], size=16) for item in matched_bundles]
+                else:
+                    matched = response.json()["stores"]
+                    search_result.controls = [ft.Text(store["name"], size=16) for store in matched]
+            else:
+                search_result.controls = [
                 ft.Icon(name="search_off", size=80, color=ft.Colors.GREY_400),
                 ft.Text("검색 결과가 없습니다.", size=16, color=ft.Colors.GREY_600)
             ]
-
+            """
+            현재 검색기능이 완료되었습니다. 다만 검색 기능에 대한 출력이 위에 텍스트만 나오게 되어있어요.
+            이를 다양한 정보가 더 나오도록 꾸며주시기를 요청드립니다.
+            """
         page.update()
 
     search_field.on_submit = search_enter
-
+    search_field.value = app_state.search_keyword if app_state.search_keyword else ""
+    search_filter.current = app_state.search_category
+    selected_filter_label.value = app_state.search_category
+    if app_state.search_keyword:
+        search_enter(None)
+        app_state.search_keyword = ""
+        
     return ft.View(
         route="/searchview",
         controls=[

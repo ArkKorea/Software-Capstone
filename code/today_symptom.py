@@ -2,6 +2,7 @@ import flet as ft
 from datetime import date
 from urllib.parse import urlparse, parse_qs
 from nav_bar import nav_bar
+from functools import partial
 from config import BASE_URL
 import app_state
 import httpx
@@ -37,6 +38,28 @@ def today_symptom_screen(page: ft.Page):
         symptom_column.controls = build_symptom_ui()
         page.update()
 
+    def load_today_symptom():
+        try:
+            with httpx.Client(base_url=BASE_URL) as client:
+                response = client.post(
+                    "/api/user/symptoms/by-date",
+                    headers={"Authorization": f"Bearer {app_state.access_token}"},
+                    json={
+                        "date": selected_date.isoformat()
+                        
+                    }
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    if data:
+                        ratings["피부"] = data["skin"] or 0
+                        ratings["복통"] = data["stomach"] or 0
+                        ratings["호흡"] = data["breath"] or 0
+                        ratings["두통"] = data["headache"] or 0
+                        ratings["피로"] = data["fatigue"] or 0
+        except Exception as e:
+            print(e)
+
     def on_submit(e):
         has_error = False
         for s in SYMPTOM_CATEGORIES:
@@ -55,7 +78,7 @@ def today_symptom_screen(page: ft.Page):
                     "stomach": ratings["복통"],
                     "breath": ratings["호흡"],
                     "headache": ratings["두통"],
-                    "fatigue": ratings["피로"],  
+                    "fatigue": ratings["피로"]  
                 }
             )
             if response.status_code == 200:
@@ -79,7 +102,8 @@ def today_symptom_screen(page: ft.Page):
                             alignment=ft.MainAxisAlignment.START,
                             controls=[
                                 ft.GestureDetector(
-                                    on_tap=lambda e, s=symptom, i=i: update_rating(s, i + 1),
+                                    on_tap = partial(update_rating, symptom, i+1),
+                                    #on_tap=lambda e, s=symptom, i=i: update_rating(s, i + 1),
                                     content=ft.Icon(
                                         name=ft.Icons.STAR,
                                         color=ft.Colors.GREEN if i < ratings[symptom] else ft.Colors.GREY_300,
@@ -100,6 +124,7 @@ def today_symptom_screen(page: ft.Page):
         return ui_list
 
     # 처음 UI 세팅
+    load_today_symptom()
     symptom_column.controls = build_symptom_ui()
 
     return ft.View(
