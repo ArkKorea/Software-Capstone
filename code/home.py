@@ -1,5 +1,6 @@
 import flet as ft
 from nav_bar import nav_bar
+import app_state
 
 def home_screen(page: ft.Page):
     search_filter = ft.Ref[str]()
@@ -11,6 +12,19 @@ def home_screen(page: ft.Page):
     notification_icon = ft.IconButton(
         icon="notifications_none_outlined",
         on_click=lambda e: toggle_sound(e)
+    )
+
+    search_field = ft.TextField(
+    hint_text="Search",
+    border=None,
+    filled=False,
+    height=40,
+    bgcolor=None,
+    text_size=16,
+    cursor_color=ft.Colors.BLACK,
+    content_padding=ft.Padding(0, 0, 0, 0),
+    border_color=ft.Colors.TRANSPARENT,
+    border_radius=0
     )
 
     def toggle_sound(e):
@@ -26,7 +40,16 @@ def home_screen(page: ft.Page):
         selected_filter_label.value = selected
         page.update()
 
+    def home_search(e):
+        keyword = search_field.value.strip()
+        if keyword == "":
+            return
+        app_state.search_keyword = keyword
+        app_state.search_category = search_filter.current
+        page.go("/searchview")
+            
     selected_filter_label = ft.Text(search_filter.current, size=14)
+    search_field.on_submit = home_search
 
     filter_menu = ft.PopupMenuButton(
         items=[
@@ -98,18 +121,19 @@ def home_screen(page: ft.Page):
                                     ft.Icon(name="search", color=ft.Colors.GREY_600, size=22),
                                     ft.Container(
                                         width=page.width * 0.5,
-                                        content=ft.TextField(
-                                            hint_text="Search",
-                                            border=None,
-                                            filled=False,
-                                            height=40,
-                                            bgcolor=None,
-                                            text_size=16,
-                                            cursor_color=ft.Colors.BLACK,
-                                            content_padding=ft.Padding(0, 0, 0, 0),
-                                            border_color=ft.Colors.TRANSPARENT,
-                                            border_radius=0
-                                        )
+                                        content=search_field
+                                        #content=ft.TextField(
+                                        #    hint_text="Search",
+                                        #    border=None,
+                                        #    filled=False,
+                                        #    height=40,
+                                        #    bgcolor=None,
+                                        #    text_size=16,
+                                        #    cursor_color=ft.Colors.BLACK,
+                                        #    content_padding=ft.Padding(0, 0, 0, 0),
+                                        #    border_color=ft.Colors.TRANSPARENT,
+                                        #    border_radius=0
+                                        #)
                                     ),
                                     filter_row
                                 ]

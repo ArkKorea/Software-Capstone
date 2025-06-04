@@ -112,7 +112,13 @@ def search_view_screen(page: ft.Page):
         page.update()
 
     search_field.on_submit = search_enter
-
+    search_field.value = app_state.search_keyword if app_state.search_keyword else ""
+    search_filter.current = app_state.search_category
+    selected_filter_label.value = app_state.search_category
+    if app_state.search_keyword:
+        search_enter(None)
+        app_state.search_keyword = ""
+        
     return ft.View(
         route="/searchview",
         controls=[
