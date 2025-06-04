@@ -10,7 +10,7 @@ from app.crud.meal import make_suggested_products
 from app.schemas.ocr import OCRProductResponse
 from app.core.ocr_utils import preprocess_image, extract_known_allergens, match_user_allergens
 
-async def analyze_product_from_ocr(product_name: str, image_file: UploadFile, db: Session, current_user: User) -> OCRProductResponse:
+def analyze_product_from_ocr(product_name: str, image_file: UploadFile, db: Session, current_user: User) -> OCRProductResponse:
     # 이미지 저장
     temp_path = os.path.join("/tmp", f"ocr_{uuid.uuid4().hex}.jpg")
     with open(temp_path, "wb") as buffer:

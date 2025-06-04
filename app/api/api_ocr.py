@@ -10,10 +10,10 @@ from app.services.ocr_service import analyze_product_from_ocr
 router = APIRouter()
 
 @router.post("/product/from-ocr", response_model=OCRProductResponse)
-async def from_ocr(
+def from_ocr(
     product_name: str = Form(...),
     image_file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return await analyze_product_from_ocr(product_name, image_file, db, current_user)
+    return analyze_product_from_ocr(product_name, image_file, db, current_user)
