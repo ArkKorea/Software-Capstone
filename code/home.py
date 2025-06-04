@@ -1,7 +1,7 @@
 import flet as ft
 from nav_bar import nav_bar
 import app_state
-from app_state import user
+import app_state
 
 def home_screen(page: ft.Page):
     search_filter = ft.Ref[str]()
