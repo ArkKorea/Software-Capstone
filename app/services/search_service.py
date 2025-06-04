@@ -20,7 +20,6 @@ def search_product(request: SearchRequest, db: Session, current_user: User) -> S
         bundle_allergen_safe = []
 
         user_allergen_ids = [allergen.id for allergen in current_user.allergen]
-        print(f"user_allergen_ids: {user_allergen_ids}")
         for product in bundle.items:
             bundle_allergen_hit += [a.name for a in product.allergen if a.id in user_allergen_ids]
             bundle_allergen_safe += [a.name for a in product.allergen if a.id not in user_allergen_ids]
