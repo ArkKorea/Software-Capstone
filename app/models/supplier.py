@@ -3,6 +3,7 @@ from sqlalchemy.orm import relationship, Mapped, mapped_column
 from datetime import datetime
 from enum import Enum as PyEnum
 from app.models.base import Base
+from typing import List
 
 class Supplier(Base):
     __tablename__ = "suppliers"
@@ -15,6 +16,8 @@ class Supplier(Base):
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
     image_url: Mapped[str | None] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    favorites: Mapped[List["Favorite"]] = relationship("Favorite", back_populates="supplier")
 
     foods = relationship("Food", back_populates="supplier")
     bundles = relationship("FoodBundle", back_populates="supplier")

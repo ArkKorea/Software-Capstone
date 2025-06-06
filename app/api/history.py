@@ -8,7 +8,7 @@ from app.services.history import get_view_logs_service
 
 router = APIRouter()
 
-@router.get("/user/history", response_model=ViewLogResponse)
+@router.get("/history", response_model=ViewLogResponse)
 def get_view_history(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)

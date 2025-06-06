@@ -18,5 +18,7 @@ class FoodBundle(Base):
     supplier: Mapped['Supplier'] = relationship("Supplier", back_populates="bundles")
     items: Mapped[List['Food']] = relationship("Food", secondary="food_bundle_items", back_populates="bundles")
     qr_link: Mapped['QrLink'] = relationship('QrLink', back_populates='bundle')
+
     favorites: Mapped[List["Favorite"]] = relationship("Favorite", back_populates="bundle")
+
     food_bundle_items: Mapped[List['FoodBundleItem']] = relationship("FoodBundleItem", back_populates="bundle")

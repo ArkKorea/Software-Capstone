@@ -5,6 +5,7 @@ from app.schemas.supplier import SupplierDetailResponse, BundleSummary
 from app.schemas.product import ProductResponse, BundleResponse
 from app.crud.item_lookup import get_food_by_id, get_bundle_by_id, get_supplier_by_id
 from app.crud.history import add_or_update_view_log
+from app.crud.favorite import is_product_favorite, is_bundle_favorite, is_supplier_favorite
 
 # id를 통한 상품 상세 조회
 def get_product_detail_service(db: Session, product_id: int, user: User) -> ProductResponse:
@@ -21,6 +22,8 @@ def get_product_detail_service(db: Session, product_id: int, user: User) -> Prod
     allergen_hit = list(user_allergen_names & food_allergen_names)
     allergen_safe = list(food_allergen_names - user_allergen_names)
 
+    is_favorite = is_product_favorite(db, user.id, product_id)
+
     return ProductResponse(
         product_id=food.id,
         name=food.name,
@@ -28,7 +31,7 @@ def get_product_detail_service(db: Session, product_id: int, user: User) -> Prod
         ingredient=food.ingredient or "",
         allergen_hit=allergen_hit,
         allergen_safe=allergen_safe,
-        is_favorite=False,
+        is_favorite=is_favorite,
         supplier_id=food.supplier.id,
         supplier_name=food.supplier.name
     )
@@ -43,12 +46,15 @@ def get_bundle_detail_service(db: Session, bundle_id: int, user: User) -> Bundle
 
     user_allergen_names = {a.name for a in user.allergens} if user.role == "consumer" else set()
 
+    is_favorite = is_bundle_favorite(db, user.id, bundle_id)
+
     products: list[ProductResponse] = []
     for item in bundle.items:
         food = item.food
         food_allergen_names = {a.name for a in food.allergen}
         allergen_hit = list(user_allergen_names & food_allergen_names)
         allergen_safe = list(food_allergen_names - user_allergen_names)
+        is_f_favorite = is_product_favorite(db, food.id, user.id)
 
         products.append(ProductResponse(
             product_id=food.id,
@@ -57,7 +63,7 @@ def get_bundle_detail_service(db: Session, bundle_id: int, user: User) -> Bundle
             ingredient=food.ingredient or "",
             allergen_hit=allergen_hit,
             allergen_safe=allergen_safe,
-            is_favorite=False,  # 즐겨찾기 기능 미적용
+            is_favorite=is_f_favorite,
             supplier_id=food.supplier.id,
             supplier_name=food.supplier.name
         ))
@@ -67,7 +73,8 @@ def get_bundle_detail_service(db: Session, bundle_id: int, user: User) -> Bundle
         name=bundle.name,
         image_url=bundle.image_url or "",
         supplier_id=bundle.supplier.id,
-        products=products
+        products=products,
+        is_favorite = is_favorite
     )
 
 def get_supplier_detail_service(db: Session, supplier_id: int, user: User) -> SupplierDetailResponse:
@@ -80,12 +87,15 @@ def get_supplier_detail_service(db: Session, supplier_id: int, user: User) -> Su
 
     user_allergen_names = {a.name for a in user.allergens} if user.role == "consumer" else set()
 
+    is_favorite = is_supplier_favorite(db, user.id, supplier_id)
+
     # 상품 목록 구성
     products = []
     for food in supplier.foods:
         food_allergen_names = {a.name for a in food.allergen}
         allergen_hit = list(user_allergen_names & food_allergen_names)
         allergen_safe = list(food_allergen_names - user_allergen_names)
+        is_f_favorite = is_product_favorite(db, food.id, user.id)
 
         products.append(ProductResponse(
             product_id=food.id,
@@ -94,7 +104,7 @@ def get_supplier_detail_service(db: Session, supplier_id: int, user: User) -> Su
             ingredient=food.ingredient or "",
             allergen_hit=allergen_hit,
             allergen_safe=allergen_safe,
-            is_favorite=False,
+            is_favorite=is_f_favorite,
             supplier_id=supplier.id,
             supplier_name=supplier.name
         ))
@@ -104,7 +114,8 @@ def get_supplier_detail_service(db: Session, supplier_id: int, user: User) -> Su
         BundleSummary(
             id=bundle.id,
             name=bundle.name,
-            image_url=bundle.image_url or ""
+            image_url=bundle.image_url or "",
+            is_favorite = is_bundle_favorite(db, bundle.id, user.id)
         )
         for bundle in supplier.bundles
     ]
@@ -114,5 +125,6 @@ def get_supplier_detail_service(db: Session, supplier_id: int, user: User) -> Su
         name=supplier.name,
         image_url=supplier.image_url or "",
         products=products,
-        bundles=bundles
+        bundles=bundles,
+        is_favorite=is_favorite
     )

@@ -24,7 +24,7 @@ def create_user(db: Session, user_data: RegisterRequest, password_hash: str, ema
     db.refresh(new_user)
     return new_user
 
-# 이메일 인증증
+# 이메일 인증
 # 이메일 인증 토큰으로 유저 찾기
 def get_user_by_verification_token(db: Session, token: str) -> User | None:
     print(">>> 쿼리용 토큰:", repr(token))  # 공백 유무 확인
