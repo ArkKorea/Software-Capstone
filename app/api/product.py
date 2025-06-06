@@ -1,6 +1,6 @@
 #qr 혹은 바코드 처리 진입점
 from typing import Union
-from app.schemas.product import ProductResponse, ProductRequest, BundleResponse, ProductCreate, ProductCreateResponse, ProductUpdate, ProductDelete
+from app.schemas.product import ProductResponse, ProductRequest, ProductCreate, ProductCreateResponse, ProductUpdate, ProductDelete
 from app.services.product_service import decode_barcode, decode_qrcode, create_product_service, get_my_products_service, update_product_service, delete_product_service
 from app.db.database import get_db
 from fastapi import APIRouter, Depends, HTTPException
@@ -10,15 +10,14 @@ from app.models.user import User
 
 router = APIRouter()
 
-@router.post("/from-code", response_model=Union[ProductResponse, BundleResponse])
-
+@router.post("/from-code")
 def code_scanner(request: ProductRequest,
                  db: Session = Depends(get_db),
                  current_user: User = Depends(get_current_user)):
   
     code_type = request.type
     if code_type == "barcode":
-        return decode_barcode(request.value, db, current_user)
+        return decode_barcode(request.value, db)
     elif code_type == "qrcode":
         return decode_qrcode(request.value, db, current_user)
     else:
