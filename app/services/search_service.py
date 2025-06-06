@@ -60,6 +60,7 @@ def get_store_product_list(request: StoreProductListRequest, db: Session, curren
     return StoreProductListResponse(
         store=Store(store_id=store.id,
                     name=store.name or "",
-                    address=store.address or ""),
+                    address=store.address or "",
+                   is_favorite=is_supplier_favorite(db, current_user.id, store.id)),
         products=[get_product_detail_service(db, product.id, current_user) for product in products]
     )
