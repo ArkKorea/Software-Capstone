@@ -16,7 +16,7 @@ def search_function(request: SearchRequest,
     if search_type == "product":
         return search_product(request, db, current_user)
     elif search_type == "store":
-        return search_store(request, db)
+        return search_store(request, db, current_user)
     else:
         raise HTTPException(status_code=400,
                             detail="유효하지 않은 요청 타입입니다. 'product' 또는 'store'을 입력해주세요.")

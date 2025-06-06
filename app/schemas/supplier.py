@@ -21,6 +21,7 @@ class BundleSummary(BaseModel):
     id: int
     name: str
     image_url: Optional[str] = None
+    is_favorite: bool
 
 class SupplierDetailResponse(BaseModel):
     id: int
@@ -28,4 +29,5 @@ class SupplierDetailResponse(BaseModel):
     image_url: Optional[str]
     products: List[ProductResponse]
     bundles: List[BundleSummary]  # 이름, id, 이미지만
+    is_favorite: bool
 

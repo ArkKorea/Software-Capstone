@@ -10,6 +10,7 @@ class Store(BaseModel):
     store_id: int
     name: str
     address: str = None
+    is_favorite: bool
 
 class Bundle(BaseModel):
     bundle_id: int
@@ -19,6 +20,7 @@ class Bundle(BaseModel):
     allergen_safe: List[str]
     supplier_id: int
     supplier_name: str
+    is_favorite: bool
 
 
 class SearchStoreResponse(BaseModel):

@@ -53,3 +53,21 @@ def get_favorite_by_target(db: Session, user_id: int, food_id: int = None, bundl
         Favorite.bundle_id == bundle_id,
         Favorite.supplier_id == supplier_id
     ).first()
+
+def is_product_favorite(db: Session, user_id: int, food_id: int) -> bool:
+    return db.query(Favorite).filter_by(
+        user_id=user_id,
+        food_id=food_id
+    ).first() is not None
+
+def is_bundle_favorite(db: Session, user_id: int, bundle_id: int) -> bool:
+    return db.query(Favorite).filter_by(
+        user_id=user_id,
+        bundle_id=bundle_id
+    ).first() is not None
+
+def is_supplier_favorite(db: Session, user_id: int, supplier_id: int) -> bool:
+    return db.query(Favorite).filter_by(
+        user_id=user_id,
+        supplier_id=supplier_id
+    ).first() is not None

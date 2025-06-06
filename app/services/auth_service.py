@@ -1,7 +1,9 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from datetime import datetime
+from email.mime.text import MIMEText
 import uuid
+import smtplib
 
 # 보안
 from app.core.security import (
@@ -78,9 +80,31 @@ def register_user(request: RegisterRequest, db: Session) -> RegisterResponse:
 
     # 유저 생성
     create_user(db, request, password_hash, email_token)
-
-    # 추후 이메일 발송 추가 예정
+    send_verification_email(request.email, email_token)
     return RegisterResponse(message="이메일 인증 링크가 발송되었습니다.")
+
+
+# 인증용 이메일 발송
+def send_verification_email(to_email: str, token: str):
+    verify_url = f"http://localhost:8000/api/auth/verify?token={token}"
+    subject = "이메일 인증을 완료해 주세요"
+    body = f"""
+    아래 링크를 클릭하여 이메일 인증을 완료해 주세요:
+
+    {verify_url}
+
+    이 링크는 일정 시간 후 만료될 수 있습니다.
+    """
+    msg = MIMEText(body)
+    msg["Subject"] = subject
+    msg["From"] = "allertsign@gmail.com"
+    msg["To"] = to_email
+
+    with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        server.starttls()
+        server.login("allertsign@gmail.com", "lwiz gvnf tqlc tcgr")
+        server.send_message(msg)
+
 
 def verify_user(token: str, db: Session) -> EmailVerificationResponse:
     user = get_user_by_verification_token(db, token)

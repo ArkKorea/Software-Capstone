@@ -17,4 +17,4 @@ class Favorite(Base):
     user: Mapped["User"] = relationship("User", back_populates="favorites")
     food: Mapped[Optional["Food"]] = relationship("Food", back_populates="favorites")
     bundle: Mapped[Optional["FoodBundle"]] = relationship("FoodBundle", back_populates="favorites")
-    supplier: Mapped[Optional["Supplier"]] = relationship("Supplier")
+    supplier: Mapped["Supplier"] = relationship("Supplier", back_populates="favorites")
