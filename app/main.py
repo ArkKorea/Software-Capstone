@@ -1,9 +1,13 @@
 from fastapi import FastAPI
 from app.api import allergen, auth, product, search, favorite, symptom, meal, detail, bundle, route_to_app, history
 
-
-import app.models
 from app.models.base import Base
+
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+from fastapi import Request
+
+templates = Jinja2Templates(directory="app/templates")
 
 app = FastAPI()
 

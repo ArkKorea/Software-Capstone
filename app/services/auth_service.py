@@ -2,8 +2,15 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from datetime import datetime
 from email.mime.text import MIMEText
+from app.crud.user import get_user_by_email, delete_user_by_email, create_user
+from app.core.security import hash_password
+from fastapi.responses import HTMLResponse
+from fastapi import Request
 import uuid
 import smtplib
+
+from fastapi.templating import Jinja2Templates
+templates = Jinja2Templates(directory="app/templates")
 
 # 보안
 from app.core.security import (
@@ -39,6 +46,9 @@ from app.schemas.auth import (
     MessageResponse
 )
 
+# 인증용 이메일 정보
+EMAIL_SENDER = "allertsign@gmail.com"
+EMAIL_PASSWORD = "lwiz gvnf tqlc tcgr"
 
 def login_user(request: LoginRequest, db: Session):
     user = get_user_by_email(db, request.email)
@@ -66,21 +76,25 @@ def register_user(request: RegisterRequest, db: Session) -> RegisterResponse:
         raise HTTPException(status_code=400, detail="개인정보 수집 및 이용에 동의해야 합니다.")
 
     existing_user = get_user_by_email(db, request.email)
-    if existing_user:
+
+    # 1. 인증된 사용자면 중복 오류
+    if existing_user and existing_user.is_verified:
         raise HTTPException(status_code=409, detail="이미 등록된 이메일입니다.", headers={"X-Error-Code": "EMAIL_ALREADY_EXISTS"})
 
     if len(request.password) < 8:
         raise HTTPException(status_code=400, detail="비밀번호는 8자 이상이어야 합니다.", headers={"X-Error-Code": "INVALID_PASSWORD_FORMAT"})
 
-    # 비밀번호 해싱
-    password_hash = hash_password(request.password)
+    # 2. 기존 미인증 유저는 삭제
+    if existing_user and not existing_user.is_verified:
+        delete_user_by_email(db, request.email)  # 또는 update 방식도 가능
 
-    # 이메일 인증 토큰 생성
+    # 3. 새로운 계정 생성
+    password_hash = hash_password(request.password)
     email_token = str(uuid.uuid4())
 
-    # 유저 생성
-    create_user(db, request, password_hash, email_token)
+    create_user(db, request, password_hash, email_token)  # is_verified=False 상태로 저장
     send_verification_email(request.email, email_token)
+
     return RegisterResponse(message="이메일 인증 링크가 발송되었습니다.")
 
 
@@ -151,3 +165,22 @@ def reset_password(request: ResetPasswordConfirm, db: Session) -> MessageRespons
     update_user_password(db, user, hashed_pw)
 
     return MessageResponse(message="비밀번호가 성공적으로 변경되었습니다.")
+
+def verify_user_html(token: str, request: Request, db: Session):
+    user = get_user_by_verification_token(db, token)
+
+    if not user:
+        return templates.TemplateResponse("verify_error.html", {
+            "request": request,
+            "message": "토큰이 유효하지 않거나 만료되었습니다."
+        })
+
+    if user.is_verified:
+        return templates.TemplateResponse("verify_error.html", {
+            "request": request,
+            "message": "이미 인증된 계정입니다."
+        })
+
+    verify_user_email(db, user)
+
+    return templates.TemplateResponse("verify_success.html", {"request": request})

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 from app.schemas.auth import (
     LoginRequest, LoginResponse,
@@ -8,9 +8,11 @@ from app.schemas.auth import (
 )
 from app.services.auth_service import (
     login_user, register_user, verify_user,
-    request_password_reset, reset_password
+    request_password_reset, reset_password,
+    verify_user_html
 )
 from app.db.database import get_db
+from fastapi.responses import HTMLResponse
 
 router = APIRouter()
 
@@ -22,9 +24,9 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
 def register(request: RegisterRequest, db: Session = Depends(get_db)):
     return register_user(request, db)
 
-@router.get("/verify", response_model=EmailVerificationResponse)
-def verify_email(token: str, db: Session = Depends(get_db)):
-    return verify_user(token, db)
+@router.get("/verify", response_class=HTMLResponse)
+def verify_email(token: str, request: Request, db: Session = Depends(get_db)):
+    return verify_user_html(token, request, db)
 
 # 비밀번호 재설정 요청
 @router.post("/reset-password-request", response_model=MessageResponse)

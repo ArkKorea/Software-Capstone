@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>이메일 인증 실패</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f8f9fa;
+            text-align: center;
+            padding-top: 100px;
+        }
+        .card {
+            display: inline-block;
+            background: white;
+            padding: 30px 50px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+        h1 {
+            color: #dc3545;
+        }
+        p {
+            margin-top: 10px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>인증 실패</h1>
+        <p>{{ message }}</p>
+    </div>
+</body>
+</html>
