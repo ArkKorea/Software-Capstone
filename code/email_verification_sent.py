@@ -1,9 +1,11 @@
-# email_verification_sent.py
 import flet as ft
 
 def email_verification_sent_screen(page: ft.Page, email: str):
     def go_back(e):
         page.go("/signup")
+
+    def go_login(e):
+        page.go("/login")
 
     return ft.View(
         "/emailverificationsent",
@@ -14,7 +16,7 @@ def email_verification_sent_screen(page: ft.Page, email: str):
                 bgcolor=ft.Colors.WHITE,
                 leading=ft.IconButton(
                     icon=ft.Icons.ARROW_BACK,
-                    on_click=lambda _: page.go("/signup")
+                    on_click=go_back
                 )
             ),
             ft.Container(
@@ -29,7 +31,7 @@ def email_verification_sent_screen(page: ft.Page, email: str):
                             text_align=ft.TextAlign.CENTER
                         ),
                         ft.Container(
-                            width=page.width * 0.95,  # 가로 길이를 넓게 설정 (95%)
+                            width=page.width * 0.95,
                             padding=15,
                             bgcolor=ft.Colors.GREEN_50,
                             border_radius=8,
@@ -69,6 +71,16 @@ def email_verification_sent_screen(page: ft.Page, email: str):
                             alignment=ft.MainAxisAlignment.CENTER,
                             spacing=5
                         ),
+                        ft.ElevatedButton(
+                            text="로그인 화면으로 돌아가기",
+                            on_click=go_login,
+                            style=ft.ButtonStyle(
+                                bgcolor=ft.Colors.GREEN,
+                                color=ft.Colors.WHITE,
+                                shape=ft.RoundedRectangleBorder(radius=8),
+                                padding=ft.Padding(10, 15, 10, 15),
+                            ),
+                        )
                     ],
                     alignment=ft.MainAxisAlignment.START,
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
