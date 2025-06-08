@@ -1,5 +1,12 @@
 import flet as ft
+import app_state
+import httpx
+import base64
+from config import BASE_URL
 from nav_bar import nav_bar
+
+def get_auth_headers():
+    return {"Authorization": f"Bearer {app_state.access_token}"}
 
 def product_register_screen(page: ft.Page):
     allergy_items = [
@@ -26,6 +33,7 @@ def product_register_screen(page: ft.Page):
 
     selected_allergies = set()
     file_path = ft.Text()
+    uploaded_file = None
 
     def build_allergy_chip(label, img_src):
         selected = False
@@ -33,10 +41,10 @@ def product_register_screen(page: ft.Page):
             bgcolor=ft.Colors.LIGHT_GREEN_100,
             border_radius=12,
             padding=6,
-            height=80,  # ✅ 세로 길이 줄이기
-            alignment=ft.alignment.center,  # ✅ 컨테이너 내 정렬 중앙
+            height=80,
+            alignment=ft.alignment.center,
             content=ft.Column(
-                alignment=ft.MainAxisAlignment.CENTER,  # ✅ 세로 방향 중앙 정렬
+                alignment=ft.MainAxisAlignment.CENTER,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 spacing=4,
                 controls=[
@@ -59,8 +67,6 @@ def product_register_screen(page: ft.Page):
 
         return ft.GestureDetector(on_tap=toggle_selection, content=container)
 
-
-    # ✅ GridView로 반응형 레이아웃 구현 (Wrap 미지원 대체)
     allergy_grid = ft.GridView(
         max_extent=100,
         child_aspect_ratio=1.2,
@@ -74,7 +80,13 @@ def product_register_screen(page: ft.Page):
     page.overlay.append(file_picker)
 
     def handle_file_result(e: ft.FilePickerResultEvent):
-        file_path.value = e.files[0].name if e.files else ""
+        nonlocal uploaded_file
+        if e.files:
+            uploaded_file = e.files[0]
+            file_path.value = uploaded_file.name
+        else:
+            uploaded_file = None
+            file_path.value = ""
         file_path.update()
 
     file_picker.on_result = handle_file_result
@@ -90,6 +102,7 @@ def product_register_screen(page: ft.Page):
     file_error = ft.Text("", color=ft.Colors.RED)
 
     def validate_and_save(e):
+        print("🟢 저장 버튼 클릭됨")
         valid = True
 
         if not name_field.value:
@@ -116,23 +129,60 @@ def product_register_screen(page: ft.Page):
         else:
             ingredient_error.value = ""
 
-        if not file_path.value:
+        if not uploaded_file:
             file_error.value = "필수 체크 항목입니다."
+            print("🔴 파일이 업로드되지 않았습니다.")
             valid = False
         else:
-            file_error.value = ""
+            file_error.value = f"✅ 파일 선택됨: {uploaded_file.path}"
 
         for msg in [name_error, supplier_error, allergy_error, ingredient_error, file_error]:
             msg.update()
 
-        if valid:
-            print("저장됨:")
-            print("제품명:", name_field.value)
-            print("공급자명:", supplier_field.value)
-            print("알레르기:", selected_allergies)
-            print("성분:", ingredient_field.value)
-            print("파일:", file_path.value)
-            page.go("/productregistersuccess")
+        if not valid:
+            print("🔴 유효성 검사 실패. 저장 중단.")
+            return
+
+        try:
+            print(f"📂 파일 읽기 시작: {uploaded_file.path}")
+            with open(uploaded_file.path, "rb") as f:
+                raw_bytes = f.read()
+                print(f"📦 파일 크기: {len(raw_bytes)} bytes")
+                image_base64 = base64.b64encode(raw_bytes).decode("utf-8")
+                print("✅ base64 인코딩 완료")
+        except Exception as err:
+            file_error.value = f"이미지 인코딩 실패: {err}"
+            file_error.update()
+            print(f"❌ 파일 인코딩 실패: {err}")
+            return
+
+        payload = {
+            "name": name_field.value,
+            "ingredient": ingredient_field.value,
+            "image_base64": image_base64,
+            "allergies": list(selected_allergies)
+        }
+
+        print("📤 서버에 전송할 데이터:")
+        print(payload)
+
+        try:
+            with httpx.Client() as client:
+                print(f"🌐 요청 시작: {BASE_URL}/api/product/create")
+                res = client.post(f"{BASE_URL}/api/product/create", json=payload, headers=get_auth_headers())
+                print(f"🟢 서버 응답 코드: {res.status_code}")
+                if res.status_code == 200:
+                    print("✅ 등록 성공. 성공 화면으로 이동합니다.")
+                    page.go("/productregistersuccess")
+                else:
+                    print("❌ 등록 실패. 응답 내용:", res.text)
+                    file_error.value = f"등록 실패: {res.json()}"
+                    file_error.update()
+        except Exception as err:
+            print(f"❌ 서버 요청 중 오류 발생: {err}")
+            file_error.value = f"요청 실패: {err}"
+            file_error.update()
+
 
     return ft.View(
         "/productregister",
@@ -172,7 +222,7 @@ def product_register_screen(page: ft.Page):
                                 supplier_field,
                                 supplier_error,
                                 step_text("STEP 3", "알레르기 항목 선택"),
-                                allergy_grid,  # ✅ GridView 적용
+                                allergy_grid,
                                 allergy_error,
                                 step_text("STEP 4", "전체 성분 입력"),
                                 ingredient_field,
