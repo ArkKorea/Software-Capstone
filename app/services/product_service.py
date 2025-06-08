@@ -105,8 +105,8 @@ def create_product_service(db: Session, product: ProductCreate, user: User) -> P
 
 # 내 제품 목록 조회
 def get_my_products_service(db: Session, user: User) -> list[ProductResponse]:
-    if user.role != "supplier" or not user.supplier_id:
-        raise HTTPException(status_code=403, detail="상품 목록 조회 권한이 없습니다.")
+    # if user.role != "supplier" or not user.supplier_id:
+    #     raise HTTPException(status_code=403, detail="상품 목록 조회 권한이 없습니다.")
 
     products = db.query(Food).filter(Food.supplier_id == user.supplier_id).all()
 
@@ -122,14 +122,14 @@ def get_my_products_service(db: Session, user: User) -> list[ProductResponse]:
             allergen_safe=[],
             is_favorite=False,
             supplier_id=user.supplier_id,
-            supplier_name=user.name
+            supplier_name = user.supplier_id if user.supplier_id else ""
         ))
     return result
 
 # 내 상품 수정
 def update_product_service(db: Session, data: ProductUpdate, user: User):
-    if user.role != "supplier" or not user.supplier_id:
-        raise HTTPException(status_code=403, detail="수정 권한이 없습니다.")
+    # if user.role != "supplier" or not user.supplier_id:
+    #     raise HTTPException(status_code=403, detail="수정 권한이 없습니다.")
 
     product = db.query(Food).filter(Food.id == data.product_id, Food.supplier_id == user.supplier_id).first()
     if not product:

@@ -19,7 +19,8 @@ def create_user(db: Session, user_data: RegisterRequest, password_hash: str, ema
         email=user_data.email,
         password_hash=password_hash,
         birth=user_data.birthdate,
-        role="consumer",  # 기본값으로 consumer 지정
+        # role="consumer",  # 기본값으로 consumer 지정해야 하지만 테스트를 위해 모든 유저에 supplier 부여
+        role="supplier",
         is_verified=False,
         email_verification_token=email_token,
         terms_version_id=1,  # 현재 active terms_version_id가 1이라는 가정

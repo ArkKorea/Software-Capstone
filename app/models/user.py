@@ -19,7 +19,8 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(100))
     birth: Mapped[date] = mapped_column(Date)
     role: Mapped[RoleEnum]
-    supplier_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    # supplier_id를 일단 autoincrement로 바꿨음. 일반 유저도 테스트할 수 있도록록
+    supplier_id: Mapped[int | None] = mapped_column(Integer, nullable=True, autoincrement=True)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
     email_verification_token: Mapped[str | None] = mapped_column(String(255), nullable=True)
     social_provider: Mapped[str | None] = mapped_column(String(50), nullable=True)
