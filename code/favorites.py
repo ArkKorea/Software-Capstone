@@ -3,60 +3,31 @@ import app_state
 import httpx
 from config import BASE_URL
 from nav_bar import nav_bar
-
+from card_renderer import create_store_card, create_product_card  # 상품/번들 공통 카드 생성 함수
 
 def get_auth_headers():
     return {"Authorization": f"Bearer {app_state.access_token}"}
-
 
 def fetch_favorite_suppliers():
     try:
         with httpx.Client() as client:
             res = client.get(f"{BASE_URL}/api/user/favorites/suppliers", headers=get_auth_headers())
             if res.status_code == 200:
-                return res.json().get("items", [])
+                return res.json().get("stores", [])
     except Exception as e:
         print("매장 즐겨찾기 요청 실패:", e)
     return []
 
-
-def fetch_favorite_foods_and_bundles():
-    foods, bundles = [], []
+def fetch_favorite_items():
     try:
         with httpx.Client() as client:
-            res_foods = client.get(f"{BASE_URL}/api/user/favorites/foods", headers=get_auth_headers())
-            res_bundles = client.get(f"{BASE_URL}/api/user/favorites/bundles", headers=get_auth_headers())
-
-            if res_foods.status_code == 200:
-                foods = res_foods.json().get("items", [])
-            if res_bundles.status_code == 200:
-                bundles = res_bundles.json().get("items", [])
+            res = client.get(f"{BASE_URL}/api/user/favorites/items", headers=get_auth_headers())
+            if res.status_code == 200:
+                data = res.json()
+                return data.get("products", []), data.get("bundles", [])
     except Exception as e:
         print("음식/번들 즐겨찾기 요청 실패:", e)
-    return foods + bundles
-
-
-def render_favorite_item(item):
-    return ft.Container(
-        padding=10,
-        bgcolor=ft.Colors.WHITE,
-        margin=ft.margin.only(bottom=10),
-        border_radius=10,
-        content=ft.Row(
-            controls=[
-                ft.Image(src=item.get("image_url", ""), width=60, height=60, fit=ft.ImageFit.COVER),
-                ft.Container(width=10),
-                ft.Column(
-                    controls=[
-                        ft.Text(item["name"], size=16, weight="bold"),
-                        ft.Text(item["ingredient"], size=12, color=ft.Colors.GREY)
-                    ],
-                    alignment=ft.MainAxisAlignment.CENTER
-                )
-            ]
-        )
-    )
-
+    return [], []
 
 def favorites_screen(page: ft.Page):
     tab_state = ft.Ref[int]()
@@ -69,16 +40,9 @@ def favorites_screen(page: ft.Page):
 
     def update_content(index):
         tab_state.current = index
+        store_box.current.bgcolor = ft.Colors.GREEN_400 if index == 0 else ft.Colors.GREY_300
+        food_box.current.bgcolor = ft.Colors.GREEN_400 if index == 1 else ft.Colors.GREY_300
 
-        # 탭 스타일 변경
-        if index == 0:
-            store_box.current.bgcolor = ft.Colors.GREEN_400
-            food_box.current.bgcolor = ft.Colors.GREY_300
-        else:
-            store_box.current.bgcolor = ft.Colors.GREY_300
-            food_box.current.bgcolor = ft.Colors.GREEN_400
-
-        # 데이터 렌더링
         items = favorites_store if index == 0 else favorites_food
         if not items:
             content_area.current.content = ft.Container(
@@ -93,7 +57,10 @@ def favorites_screen(page: ft.Page):
                 padding=10,
                 height=page.height * 0.7,
                 content=ft.Column(
-                    controls=[render_favorite_item(item) for item in items],
+                    controls=[
+                        create_store_card(item) if index == 0 else create_product_card(item)
+                        for item in items
+                    ],
                     scroll=ft.ScrollMode.ALWAYS
                 )
             )
@@ -102,7 +69,8 @@ def favorites_screen(page: ft.Page):
     def on_load():
         nonlocal favorites_store, favorites_food
         favorites_store = fetch_favorite_suppliers()
-        favorites_food = fetch_favorite_foods_and_bundles()
+        products, bundles = fetch_favorite_items()
+        favorites_food = products + bundles
         update_content(0)
 
     page.on_view_pop = lambda _: update_content(0)
@@ -173,5 +141,4 @@ def favorites_screen(page: ft.Page):
     )
 
     on_load()
-
     return view
