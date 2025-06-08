@@ -50,7 +50,7 @@ def get_bundle_detail_service(db: Session, bundle_id: int, user: User) -> Bundle
 
     products: list[ProductResponse] = []
     for item in bundle.items:
-        food = item.food
+        food = item
         food_allergen_names = {a.name for a in food.allergen}
         allergen_hit = list(user_allergen_names & food_allergen_names)
         allergen_safe = list(food_allergen_names - user_allergen_names)
@@ -69,13 +69,15 @@ def get_bundle_detail_service(db: Session, bundle_id: int, user: User) -> Bundle
         ))
 
     return BundleResponse(
-        id=bundle.id,
-        name=bundle.name,
-        image_url=bundle.image_url or "",
-        supplier_id=bundle.supplier.id,
-        products=products,
-        is_favorite = is_favorite
-    )
+    bundle_id=bundle.id,
+    name=bundle.name,
+    image_url=bundle.image_url or "",
+    supplier_id=bundle.supplier.id,
+    supplier_name=bundle.supplier.name,
+    is_favorite=is_favorite,
+    allergen_hit=list({a.name for food in bundle.items for a in food.allergen if a.name in user_allergen_names}),
+    allergen_safe=list({a.name for food in bundle.items for a in food.allergen if a.name not in user_allergen_names}),
+)
 
 def get_supplier_detail_service(db: Session, supplier_id: int, user: User) -> SupplierDetailResponse:
     supplier = get_supplier_by_id(db, supplier_id)

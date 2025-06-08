@@ -12,6 +12,9 @@ from app.crud.item_lookup import (
     get_supplier_by_id,
 )
 from app.schemas.favorite import FavoriteActionRequest, FavoriteListResponse, FavoriteOut
+from app.schemas.search import SearchProductResponse, Bundle, SearchStoreResponse, Store
+from app.models.user import User
+from app.services.detail_service import get_product_detail_service
 
 # 즐겨찾기 추가/삭제
 def toggle_favorite(request: FavoriteActionRequest, user_id: int, db: Session) -> str:
@@ -55,22 +58,62 @@ def toggle_favorite(request: FavoriteActionRequest, user_id: int, db: Session) -
 
 
 # 즐겨찾기 목록 조회
-def get_favorites(user_id: int, db: Session, target: str) -> FavoriteListResponse:
-    favorites = get_favorites(db, user_id)
-    items = []
+def get_favorite_items(db: Session, current_user: User) -> SearchProductResponse:
+    favorites = get_favorites(db, current_user.id)
+
+    # 1. Product 즐겨찾기 수집
+    favorite_products = [
+        get_product_detail_service(db, fav.food_id, current_user)
+        for fav in favorites if fav.food_id
+    ]
+
+    # 2. Bundle 즐겨찾기 수집
+    favorite_bundles = []
+    user_allergen_ids = [a.id for a in current_user.allergen]
 
     for fav in favorites:
-        if target == "food" and fav.food_id:
-            food = get_food_by_id(db, fav.food_id)
-            if food:
-                items.append(FavoriteOut.model_validate(food))
-        elif target == "bundle" and fav.bundle_id:
-            bundle = get_bundle_by_id(db, fav.bundle_id)
-            if bundle:
-                items.append(FavoriteOut.model_validate(bundle))
-        elif target == "supplier" and fav.supplier_id:
-            supplier = get_supplier_by_id(db, fav.supplier_id)
-            if supplier:
-                items.append(FavoriteOut.model_validate(supplier))
+        if not fav.bundle_id:
+            continue
 
-    return FavoriteListResponse(items=items)
+        bundle = get_bundle_by_id(db, fav.bundle_id)
+        if not bundle:
+            continue
+
+        allergen_hit = []
+        allergen_safe = []
+
+        for product in bundle.items:
+            allergen_hit += [a.name for a in product.allergen if a.id in user_allergen_ids]
+            allergen_safe += [a.name for a in product.allergen if a.id not in user_allergen_ids]
+
+        favorite_bundles.append(Bundle(
+            bundle_id=bundle.id,
+            name=bundle.name,
+            image_url=bundle.image_url or "",
+            allergen_hit=list(set(allergen_hit)),
+            allergen_safe=list(set(allergen_safe)),
+            supplier_id=bundle.supplier.id,
+            supplier_name=bundle.supplier.name,
+            is_favorite=True
+        ))
+
+    return SearchProductResponse(products=favorite_products, bundles=favorite_bundles)
+
+def get_favorite_suppliers(db: Session, current_user: User) -> SearchStoreResponse:
+    favorites = get_favorites(db, current_user.id)
+
+    stores = []
+    for fav in favorites:
+        if not fav.supplier_id:
+            continue
+        supplier = get_supplier_by_id(db, fav.supplier_id)
+        if not supplier:
+            continue
+        stores.append(Store(
+            store_id=supplier.id,
+            name=supplier.name,
+            address=supplier.address or "",
+            is_favorite=True
+        ))
+
+    return SearchStoreResponse(stores=stores)
