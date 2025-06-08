@@ -230,7 +230,7 @@ def search_view_screen(page: ft.Page):
                                 ]
                             ),
                             ft.Text(f"공급업체: {product.get('supplier_name', '')}", size=12, color=ft.Colors.GREY_600),
-                            ft.Text(f"원재료: {product.get('ingredients_text', '')}", size=12, color=ft.Colors.GREY_700),
+                            ft.Text(f"원재료: {product.get('ingredient', '')}", size=12, color=ft.Colors.GREY_700),
                             ft.Text(f"알레르기 유발: {', '.join(allergens) if allergens else '없음'}", size=12, color=ft.Colors.RED_400),
                             ft.Text(f"안전 성분: {', '.join(safe_allergens) if safe_allergens else '정보 없음'}", size=12, color=ft.Colors.GREEN_400),
                         ]
@@ -287,7 +287,7 @@ def search_view_screen(page: ft.Page):
                         ft.Text(f"{product['name']} 알레르기 유발 식품", size=14),
                         ft.Text(", ".join(safe_allergens) if safe_allergens else "없음", size=14, color=ft.Colors.BLUE_400),
                         ft.Text("전체 성분", size=14, weight=ft.FontWeight.BOLD),
-                        ft.Text(product.get("ingredients_text", "성분 정보 없음"), size=13),
+                        ft.Text(product.get("ingredient", "성분 정보 없음"), size=13),
 
                         # ✅ 닫기 버튼 가운데 정렬
                         ft.Row(

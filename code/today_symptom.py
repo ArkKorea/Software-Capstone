@@ -52,11 +52,13 @@ def today_symptom_screen(page: ft.Page):
                 if response.status_code == 200:
                     data = response.json()
                     if data:
-                        ratings["피부"] = data["skin"] or 0
-                        ratings["복통"] = data["stomach"] or 0
-                        ratings["호흡"] = data["breath"] or 0
-                        ratings["두통"] = data["headache"] or 0
-                        ratings["피로"] = data["fatigue"] or 0
+                        ratings["피부"] = data["skin"]
+                        ratings["복통"] = data["stomach"]
+                        ratings["호흡"] = data["breath"]
+                        ratings["두통"] = data["headache"]
+                        ratings["피로"] = data["fatigue"]
+                    else:
+                        pass
         except Exception as e:
             print(e)
 
@@ -102,7 +104,8 @@ def today_symptom_screen(page: ft.Page):
                             alignment=ft.MainAxisAlignment.START,
                             controls=[
                                 ft.GestureDetector(
-                                    on_tap = partial(update_rating, symptom, i+1),
+                                    on_tap=lambda e, s=symptom, r=i+1: update_rating(s, r),
+                                    #on_tap = partial(update_rating, symptom, i+1),
                                     #on_tap=lambda e, s=symptom, i=i: update_rating(s, i + 1),
                                     content=ft.Icon(
                                         name=ft.Icons.STAR,
