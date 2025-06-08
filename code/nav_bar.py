@@ -33,14 +33,6 @@ def nav_bar(page: ft.Page, current_route: str):
             print("❌ 파일 선택 취소됨")
     file_picker.on_result = on_file_result
 
-    # ✅ 카메라 호출용 Dummy Control
-    camera_invoker = ft.Container(visible=False)
-    page.controls.append(camera_invoker)
-
-    def open_camera():
-        print("📸 카메라 호출 시도")
-        page.invoke_method("flet/camera", "openCamera")
-
     # ✅ 팝업 핸들러 정의
     def close_dialog(e=None):
         popup_dialog.open = False
@@ -56,7 +48,12 @@ def nav_bar(page: ft.Page, current_route: str):
 
     def pick_from_camera(e=None):
         close_dialog()
-        open_camera()
+        file_picker.pick_files(
+            allow_multiple=False,
+            file_type=ft.FilePickerFileType.IMAGE,
+            camera=True,
+            dialog_title="카메라로 촬영"
+        )
 
     # ✅ 팝업 다이얼로그 UI 정의
     def build_popup():
@@ -64,8 +61,7 @@ def nav_bar(page: ft.Page, current_route: str):
             modal=True,
             content=ft.Column(
                 [
-                    ft.Text("어디서 사진을 가져올까", weight="bold", size=16),
-                    ft.Text("골라줘", size=12, color=ft.Colors.GREY),
+                    ft.Text("사진 선택", weight="bold", size=16),
                     ft.Divider(),
                     ft.TextButton("사진앨범", on_click=pick_from_gallery, style=ft.ButtonStyle(color=ft.Colors.BLUE)),
                     ft.TextButton("카메라", on_click=pick_from_camera, style=ft.ButtonStyle(color=ft.Colors.BLUE)),
