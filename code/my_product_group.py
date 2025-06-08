@@ -1,10 +1,78 @@
 import flet as ft
+import httpx
+import app_state
+from config import BASE_URL
 from nav_bar import nav_bar
+
+def get_auth_headers():
+    return {"Authorization": f"Bearer " + app_state.access_token}
+
+def fetch_my_groups():
+    try:
+        with httpx.Client() as client:
+            res = client.post(f"{BASE_URL}/api/bundles/list", headers=get_auth_headers())
+            if res.status_code == 200:
+                return res.json().get("bundles", [])
+            else:
+                print("❌ 그룹 목록 요청 실패:", res.status_code, res.text)
+    except Exception as e:
+        print("❌ 그룹 목록 요청 중 예외:", e)
+    return []
 
 def my_product_group_screen(page: ft.Page):
     selected_sort_option = ft.Text("정렬", size=14, color=ft.Colors.GREEN)
+    search_field = ft.Ref[ft.TextField]()
+    list_container = ft.Ref[ft.Column]()
 
-    return ft.View(
+    groups_data = []
+
+    def apply_search_filter(e=None):
+        keyword = search_field.current.value.strip().lower()
+        filtered = [g for g in groups_data if keyword in g["name"].lower()]
+        render_group_list(filtered)
+
+    def render_group_list(bundles):
+        if not bundles:
+            list_container.current.controls = [
+                ft.Container(
+                    alignment=ft.Alignment(0, 0),
+                    padding=ft.Padding(top=20, left=20, right=20, bottom=20),
+                    content=ft.Text("그룹이 없습니다.", size=18, color=ft.Colors.GREY)
+                )
+            ]
+        else:
+            list_container.current.controls = [
+                ft.Container(
+                    padding=ft.Padding(10, 20, 10, 20),
+                    bgcolor=ft.Colors.WHITE,
+                    border_radius=10,
+                    shadow=ft.BoxShadow(blur_radius=6, color=ft.Colors.GREY_200),
+                    on_click=lambda e, id=bundle["id"]: print(f"그룹 {id} 클릭됨"),
+                    content=ft.Row(
+                        spacing=20,
+                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                        controls=[
+                            ft.Image(
+                                src=bundle["image_url"],
+                                width=60,
+                                height=60,
+                                fit=ft.ImageFit.COVER,
+                                border_radius=8
+                            ),
+                            ft.Text(bundle["name"], size=18, weight=ft.FontWeight.W_500)
+                        ]
+                    )
+                )
+                for bundle in bundles
+            ]
+        page.update()
+
+    def on_load():
+        nonlocal groups_data
+        groups_data = fetch_my_groups()
+        apply_search_filter()
+
+    view = ft.View(
         "/myproductgroup",
         controls=[
             ft.AppBar(
@@ -23,8 +91,10 @@ def my_product_group_screen(page: ft.Page):
                     ft.Container(
                         padding=ft.Padding(top=0, left=20, right=20, bottom=10),
                         content=ft.TextField(
+                            ref=search_field,
                             hint_text="검색",
                             prefix_icon=ft.Icons.SEARCH,
+                            on_change=apply_search_filter,
                             filled=True,
                             fill_color=ft.Colors.GREY_100,
                             border_radius=15,
@@ -78,10 +148,7 @@ def my_product_group_screen(page: ft.Page):
                                         )
                                     )
                                 ),
-
                                 ft.Container(expand=True),
-
-                                # 추가하기 버튼
                                 ft.ElevatedButton(
                                     text="추가하기",
                                     icon=ft.Icons.ADD,
@@ -99,12 +166,8 @@ def my_product_group_screen(page: ft.Page):
                         )
                     ),
 
-                    # 그룹 없음 안내
-                    ft.Container(
-                        alignment=ft.Alignment(0, 0),
-                        padding=ft.Padding(top=20, left=20, right=20, bottom=20),
-                        content=ft.Text("그룹이 없습니다.", size=18, color=ft.Colors.GREY)
-                    ),
+                    # 그룹 리스트 영역
+                    ft.Column(ref=list_container, controls=[]),
 
                     ft.Container(height=70)
                 ],
@@ -115,3 +178,6 @@ def my_product_group_screen(page: ft.Page):
             nav_bar(page, current_route="/myproductgroup")
         ]
     )
+
+    on_load()
+    return view
