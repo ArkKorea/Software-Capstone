@@ -1,11 +1,43 @@
 import flet as ft
-from nav_bar import nav_bar  # 네비게이션 바
+import httpx
+import app_state
+from config import BASE_URL
+from nav_bar import nav_bar
+from card_renderer import create_product_card
+
+def get_auth_headers():
+    return {"Authorization": f"Bearer " + app_state.access_token}
+
+def fetch_my_products():
+    try:
+        with httpx.Client() as client:
+            res = client.post(f"{BASE_URL}/api/product/list", headers=get_auth_headers())
+            if res.status_code == 200:
+                return res.json()
+            else:
+                print("❌ 상품 목록 요청 실패:", res.status_code, res.text)
+    except Exception as e:
+        print("❌ 상품 목록 요청 중 예외 발생:", e)
+    return []
 
 def my_product_list_screen(page: ft.Page):
-    return ft.View(
+    list_ref = ft.Ref[ft.ListView]()
+
+    def on_load():
+        print("🔄 내 상품 목록 불러오는 중...")
+        items = fetch_my_products()
+        if not items:
+            list_ref.current.controls.append(
+                ft.Text("등록된 상품이 없습니다.", size=16, color=ft.Colors.GREY)
+            )
+        else:
+            for item in items:
+                list_ref.current.controls.append(create_product_card(item))
+        page.update()
+
+    view = ft.View(
         "/myproductlist",
         controls=[
-            # AppBar 스타일로 상단 타이틀 변경
             ft.AppBar(
                 title=ft.Text("상 품   목 록", size=22, weight=ft.FontWeight.BOLD),
                 center_title=True,
@@ -15,23 +47,14 @@ def my_product_list_screen(page: ft.Page):
                     on_click=lambda _: page.go("/productmanagement")
                 )
             ),
-
             ft.Column(
                 controls=[
-                    # 구분선
                     ft.Divider(thickness=1, height=1, color=ft.Colors.GREY_300),
-
-                    # 상품 목록 리스트 (스크롤 가능)
                     ft.Container(
                         expand=True,
                         content=ft.ListView(
-                            controls=[
-                                # DB 연동 후 동적으로 추가될 항목들
-                                # product_list_item("아이스 아메리카노", "https://via.placeholder.com/100"),
-                                # product_list_item("바닐라 라떼", "https://via.placeholder.com/100"),
-                                # product_list_item("카라멜 마끼아또", "https://via.placeholder.com/100"),
-                                # product_list_item("딸기 스무디", "https://via.placeholder.com/100")
-                            ],
+                            ref=list_ref,
+                            controls=[],  # 빈 상태에서 동적으로 추가
                             spacing=15,
                             padding=ft.Padding(20, 20, 20, 80),
                             auto_scroll=False
@@ -40,24 +63,9 @@ def my_product_list_screen(page: ft.Page):
                 ],
                 expand=True
             ),
-
-            # 하단 네비게이션 바
             nav_bar(page, current_route="/myproductlist")
         ]
     )
 
-def product_list_item(name, image_url):
-    return ft.Container(
-        height=90,
-        border_radius=10,
-        bgcolor=ft.Colors.GREY_100,  # 색상 수정
-        padding=10,
-        content=ft.Row(
-            controls=[
-                ft.Image(src=image_url, width=70, height=70),
-                ft.Container(width=20),
-                ft.Text(name, size=18, weight=ft.FontWeight.NORMAL)  # 굵게 효과 없앰
-            ],
-            alignment=ft.MainAxisAlignment.START
-        )
-    )
+    on_load()
+    return view
