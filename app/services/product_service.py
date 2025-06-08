@@ -122,7 +122,7 @@ def get_my_products_service(db: Session, user: User) -> list[ProductResponse]:
             allergen_safe=[],
             is_favorite=False,
             supplier_id=user.supplier_id,
-            supplier_name = user.supplier_id if user.supplier_id else ""
+            supplier_name = user.name if user.name else ""
         ))
     return result
 

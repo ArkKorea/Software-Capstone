@@ -10,8 +10,8 @@ from app.services.product_service import save_image_from_base64
 import datetime
 
 def create_bundle_service(db: Session, data: BundleCreate, user: User):
-    if user.role != "supplier" or not user.supplier_id:
-        raise HTTPException(status_code=403, detail="번들 생성 권한이 없습니다.")
+    # if user.role != "supplier" or not user.supplier_id:
+    #     raise HTTPException(status_code=403, detail="번들 생성 권한이 없습니다.")
 
     # 이미지 저장
     image_url = save_image_from_base64(data.image_base64) if data.image_base64 else ""
@@ -35,8 +35,8 @@ def create_bundle_service(db: Session, data: BundleCreate, user: User):
 
 # 내 번들 조회
 def get_my_bundles_service(db: Session, user: User) -> BundleListResponse:
-    if user.role != "supplier" or not user.supplier_id:
-        raise HTTPException(status_code=403, detail="조회 권한이 없습니다.")
+    # if user.role != "supplier" or not user.supplier_id:
+    #     raise HTTPException(status_code=403, detail="조회 권한이 없습니다.")
 
     bundles = db.query(FoodBundle).filter(FoodBundle.supplier_id == user.supplier_id).all()
 
@@ -50,10 +50,10 @@ def get_my_bundles_service(db: Session, user: User) -> BundleListResponse:
         ]
     )
 
-# 내 번들 수정정
+# 내 번들 수정
 def update_bundle_service(db: Session, data: BundleUpdate, user: User):
-    if user.role != "supplier" or not user.supplier_id:
-        raise HTTPException(status_code=403, detail="수정 권한이 없습니다.")
+    # if user.role != "supplier" or not user.supplier_id:
+    #     raise HTTPException(status_code=403, detail="수정 권한이 없습니다.")
 
     bundle = db.query(FoodBundle).filter(
         FoodBundle.id == data.bundle_id,
@@ -79,8 +79,8 @@ def update_bundle_service(db: Session, data: BundleUpdate, user: User):
 
 # 번들 삭제
 def delete_bundle_service(db: Session, data: BundleDelete, user: User):
-    if user.role != "supplier" or not user.supplier_id:
-        raise HTTPException(status_code=403, detail="삭제 권한이 없습니다.")
+    # if user.role != "supplier" or not user.supplier_id:
+    #     raise HTTPException(status_code=403, detail="삭제 권한이 없습니다.")
 
     bundle = db.query(FoodBundle).filter(
         FoodBundle.id == data.bundle_id,
