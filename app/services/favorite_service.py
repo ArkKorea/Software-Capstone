@@ -12,9 +12,10 @@ from app.crud.item_lookup import (
     get_supplier_by_id,
 )
 from app.schemas.favorite import FavoriteActionRequest, FavoriteListResponse, FavoriteOut
-from app.schemas.search import SearchProductResponse, Bundle, SearchStoreResponse, Store
+from app.schemas.search import SearchProductResponse, Bundle, SearchStoreResponse, Store, StoreWithProductsResponse, StoreProductListResponse
 from app.models.user import User
 from app.services.detail_service import get_product_detail_service
+from app.models.food import Food
 
 # 즐겨찾기 추가/삭제
 def toggle_favorite(request: FavoriteActionRequest, user_id: int, db: Session) -> str:
@@ -99,21 +100,50 @@ def get_favorite_items(db: Session, current_user: User) -> SearchProductResponse
 
     return SearchProductResponse(products=favorite_products, bundles=favorite_bundles)
 
-def get_favorite_suppliers(db: Session, current_user: User) -> SearchStoreResponse:
+def get_favorite_suppliers_with_products(db: Session, current_user: User) -> StoreWithProductsResponse:
     favorites = get_favorites(db, current_user.id)
 
-    stores = []
+    store_responses = []
+    visited_supplier_ids = set()
+
     for fav in favorites:
-        if not fav.supplier_id:
+        supplier_id = fav.supplier_id
+        if not supplier_id or supplier_id in visited_supplier_ids:
             continue
-        supplier = get_supplier_by_id(db, fav.supplier_id)
+
+        supplier = get_supplier_by_id(db, supplier_id)
         if not supplier:
             continue
-        stores.append(Store(
+
+        visited_supplier_ids.add(supplier_id)
+
+        # 매장 정보
+        store = Store(
             store_id=supplier.id,
             name=supplier.name,
             address=supplier.address or "",
             is_favorite=True
-        ))
+        )
 
-    return SearchStoreResponse(stores=stores)
+        # 해당 매장의 모든 상품 조회
+        foods = (
+            db.query(Food)
+            .filter(Food.supplier_id == supplier.id)
+            .all()
+        )
+
+        # ProductResponse로 가공
+        product_responses = [
+            get_product_detail_service(db, food.id, current_user)
+            for food in foods
+        ]
+
+        # Store + 상품 리스트 추가
+        store_responses.append(
+            StoreProductListResponse(
+                store=store,
+                products=product_responses
+            )
+        )
+
+    return StoreWithProductsResponse(stores=store_responses)

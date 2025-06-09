@@ -36,3 +36,7 @@ class StoreProductListResponse(BaseModel):
 class SearchProductResponse(BaseModel):
     products: List[ProductResponse]
     bundles: List[Bundle]
+
+# favorite 반환용
+class StoreWithProductsResponse(BaseModel):
+    stores: List[StoreProductListResponse]
