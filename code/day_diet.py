@@ -54,7 +54,7 @@ def day_diet_screen(page: ft.Page, selected_date: date) -> ft.View:
         ]
     )
 
-    def show_instake_log_detail(entry):
+    def show_intake_log_detail(entry):
         dt_str = entry.get("datetime", "")
         try:
             date_str = datetime.fromisoformat(dt_str).strftime("%Y-%m-%d %H:%M")
@@ -164,7 +164,7 @@ def day_diet_screen(page: ft.Page, selected_date: date) -> ft.View:
                                 ft.Text(food_name, size=16)
                             ]
                         ),
-                        on_click=lambda e: show_instake_log_detail(entry)
+                        on_click=lambda e: show_intake_log_detail(entry)
                     ),
                     ft.IconButton(
                         icon=ft.Icons.MORE_VERT,

@@ -1,7 +1,15 @@
 import flet as ft
+from urllib.parse import parse_qs, urlparse
 from nav_bar import nav_bar
+from config import BASE_URL
+from qr_maker import qr_code_maker
 
 def product_register_success_screen(page: ft.Page):
+    qs = parse_qs(urlparse(page.route).query)
+    product_id = qs.get("id", [None])[0]
+    print("저장에 성공한 상품의 id는 " + product_id + "입니다.")
+    qr_code_url = qr_code_maker("product", product_id)
+
     def save_qr_image(e):
         print("QR 이미지 저장하기 클릭")
 
@@ -12,7 +20,7 @@ def product_register_success_screen(page: ft.Page):
         page.go("/productmanagement")  # 원래 화면 경로로 바꿔줘
 
     return ft.View(
-        route="/productregistersuccess",
+        route=f"/productregistersuccess?id={product_id}",
         controls=[
             # AppBar 추가
             ft.AppBar(
@@ -47,10 +55,10 @@ def product_register_success_screen(page: ft.Page):
                             text_align=ft.TextAlign.CENTER,
                             color=ft.Colors.BLACK87,
                         ),
-                        ft.Container(
+                        ft.Container( #qr코드 부분분
                             padding=ft.Padding(top=20, bottom=0, left=0, right=0),
                             content=ft.Image(
-                                src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=example",
+                                src=qr_code_url,
                                 width=120,
                                 height=120
                             )
