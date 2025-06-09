@@ -55,7 +55,8 @@ def render_history_item(item, page: ft.Page):
             "store_id": data["id"],
             "name": data["name"],
             "address": data.get("address") or "주소 정보 없음",
-            "is_favorite": data.get("is_favorite", False)
+            "is_favorite": data.get("is_favorite", False),
+            "products": data.get("products", [])
         }
         card = create_store_card(store_card_data)
         card.on_click = on_click

@@ -231,7 +231,7 @@ def store_detail_popup(page: ft.Page, store_info: dict, products: list, show_all
                     height=30
                 ),
                 ft.Text(store_info["name"], size=20, weight=ft.FontWeight.BOLD),
-                star_icon  # ⭐ 즐겨찾기 버튼 추가됨
+                star_icon
             ]
         ),
         ft.Text(f"주소: {store_info['address']}", size=14, color=ft.Colors.GREY_600),

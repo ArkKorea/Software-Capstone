@@ -41,19 +41,9 @@ def favorites_screen(page: ft.Page):
     favorites_store = []
     favorites_food = []
 
-    def create_store_card(store):
-        products = []
-        try:
-            with httpx.Client(base_url=BASE_URL) as client:
-                res = client.post(
-                    "/api/store/products",
-                    json={"store_id": store["store_id"]},
-                    headers=get_auth_headers()
-                )
-                if res.status_code == 200:
-                    products = res.json().get("products", [])
-        except Exception as e:
-            print("상품 조회 실패:", e)
+    def create_store_card(store_wrapper):
+        store = store_wrapper.get("store", {})
+        products = store_wrapper.get("products", [])
 
         return ft.Container(
             padding=10,
@@ -72,7 +62,7 @@ def favorites_screen(page: ft.Page):
                                 width=30,
                                 height=30
                             ),
-                            ft.Text(store["name"], size=16, weight=ft.FontWeight.BOLD),
+                            ft.Text(store.get("name", ""), size=16, weight=ft.FontWeight.BOLD),
                             ft.Icon(
                                 name="star" if store.get("is_favorite", False) else "star_border",
                                 color=ft.Colors.AMBER if store.get("is_favorite", False) else ft.Colors.GREY_600,
@@ -80,10 +70,10 @@ def favorites_screen(page: ft.Page):
                             )
                         ]
                     ),
-                    ft.Text(store["address"], size=14, color=ft.Colors.GREY_600),
+                    ft.Text(store.get("address", ""), size=14, color=ft.Colors.GREY_600),
                     ft.Text("판매 상품", size=13, weight=ft.FontWeight.BOLD),
                     *[
-                        ft.Text(f"- {p['name']}", size=12, color=ft.Colors.GREY_700)
+                        ft.Text(f"- {p.get('name', '')}", size=12, color=ft.Colors.GREY_700)
                         for p in products[:3]
                     ]
                 ]

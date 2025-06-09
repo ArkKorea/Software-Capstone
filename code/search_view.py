@@ -1,8 +1,8 @@
 import flet as ft
-from nav_bar import nav_bar
-from config import BASE_URL
 import app_state
 import httpx
+from config import BASE_URL
+from nav_bar import nav_bar
 from popup_manager import store_detail_popup, product_detail_popup
 
 def search_view_screen(page: ft.Page):
@@ -104,7 +104,7 @@ def search_view_screen(page: ft.Page):
         safe_allergens = product.get("allergens_safe") or product.get("allergen_safe") or []
         is_fav = product.get("is_favorite", False)
         image_url = f"{BASE_URL}{product['image_url']}" if product["image_url"].startswith("/static") else product["image_url"]
-        
+
         return ft.Container(
             padding=10,
             bgcolor=ft.Colors.WHITE,
@@ -180,6 +180,13 @@ def search_view_screen(page: ft.Page):
                         for b in bundles:
                             search_result.controls.append(create_product_card(b))
 
+                    app_state.search_result = {
+                        "category": category,
+                        "keyword": keyword,
+                        "products": products,
+                        "bundles": bundles
+                    }
+
                     if not products and not bundles:
                         search_result.controls.append(ft.Text("검색 결과가 없습니다.", size=16, color=ft.Colors.GREY_600))
                 else:
@@ -190,6 +197,12 @@ def search_view_screen(page: ft.Page):
                             search_result.controls.append(create_store_card(s))
                     else:
                         search_result.controls.append(ft.Text("검색 결과가 없습니다.", size=16, color=ft.Colors.GREY_600))
+
+                    app_state.search_result = {
+                        "category": category,
+                        "keyword": keyword,
+                        "stores": stores
+                    }
             else:
                 search_result.controls.append(ft.Text("검색 중 오류가 발생했습니다.", size=16, color=ft.Colors.RED))
         page.update()
@@ -211,9 +224,40 @@ def search_view_screen(page: ft.Page):
     search_field.value = app_state.search_keyword or ""
     search_filter.current = app_state.search_category
     selected_filter_label.value = app_state.search_category
-    if app_state.search_keyword:
-        search_enter(None)
-        app_state.search_keyword = ""
+
+    if app_state.search_result:
+        data = app_state.search_result
+        category = data.get("category", "product")
+        keyword = data.get("keyword", "")
+
+        search_filter.current = "제품명" if category == "product" else "매장명"
+        selected_filter_label.value = search_filter.current
+        search_field.value = keyword
+        search_result.controls.clear()
+
+        if category == "product":
+            products = data.get("products", [])
+            bundles = data.get("bundles", [])
+            if products:
+                search_result.controls.append(ft.Text("상품", size=18, weight=ft.FontWeight.BOLD))
+                for p in products:
+                    search_result.controls.append(create_product_card(p))
+            if bundles:
+                search_result.controls.append(ft.Text("묶음 상품", size=18, weight=ft.FontWeight.BOLD))
+                for b in bundles:
+                    search_result.controls.append(create_product_card(b))
+            if not products and not bundles:
+                search_result.controls.append(ft.Text("검색 결과가 없습니다.", size=16, color=ft.Colors.GREY_600))
+        else:
+            stores = data.get("stores", [])
+            if stores:
+                search_result.controls.append(ft.Text("매장", size=18, weight=ft.FontWeight.BOLD))
+                for s in stores:
+                    search_result.controls.append(create_store_card(s))
+            else:
+                search_result.controls.append(ft.Text("검색 결과가 없습니다.", size=16, color=ft.Colors.GREY_600))
+
+        page.update()
 
     return ft.View(
         route="/searchview",

@@ -3,27 +3,15 @@ import app_state
 import httpx
 from config import BASE_URL
 
-
 def create_store_card(store):
-    products = []
-    try:
-        with httpx.Client(base_url=BASE_URL) as client:
-            res = client.post(
-                "/api/store/products",
-                json={"store_id": store["store_id"]},
-                headers={"Authorization": f"Bearer {app_state.access_token}"}
-            )
-            if res.status_code == 200:
-                products = res.json().get("products", [])
-    except Exception as e:
-        print("상품 조회 실패:", e)
+    products = store.get("products", [])
 
     return ft.Container(
         padding=10,
         bgcolor=ft.Colors.WHITE,
         border_radius=10,
         shadow=ft.BoxShadow(blur_radius=6, color=ft.Colors.GREY_200),
-        on_click=lambda e: print(f"{store['name']} 클릭됨"),  # 또는 상세 팝업
+        on_click=lambda e: print(f"{store.get('name', '')} 클릭됨"), 
         content=ft.Column(
             spacing=6,
             controls=[
@@ -35,7 +23,7 @@ def create_store_card(store):
                             width=30,
                             height=30
                         ),
-                        ft.Text(store["name"], size=16, weight=ft.FontWeight.BOLD),
+                        ft.Text(store.get("name", ""), size=16, weight=ft.FontWeight.BOLD),
                         ft.Icon(
                             name="star" if store.get("is_favorite", False) else "star_border",
                             color=ft.Colors.AMBER if store.get("is_favorite", False) else ft.Colors.GREY_600,
@@ -43,13 +31,15 @@ def create_store_card(store):
                         )
                     ]
                 ),
-                ft.Text(store["address"], size=14, color=ft.Colors.GREY_600),
+                ft.Text(store.get("address", ""), size=14, color=ft.Colors.GREY_600),
                 ft.Text("판매 상품", size=13, weight=ft.FontWeight.BOLD),
-                *[ft.Text(f"- {p['name']}", size=12, color=ft.Colors.GREY_700) for p in products[:3]]
+                *[
+                    ft.Text(f"- {p.get('name', '')}", size=12, color=ft.Colors.GREY_700)
+                    for p in products[:3]
+                ]
             ]
         )
     )
-
 
 def create_product_card(item):
     is_bundle = "bundle_id" in item

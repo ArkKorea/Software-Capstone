@@ -9,3 +9,6 @@ search_keyword = ""
 search_category = "제품명"
 
 editing_product = None
+
+# 검색 결과 저장
+search_result = None
