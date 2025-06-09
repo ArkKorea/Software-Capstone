@@ -1,8 +1,18 @@
+-- 동의 약관 테이블(new)
+CREATE TABLE terms_versions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    version VARCHAR(20) NOT NULL, -- 예: '1.0', '1.1'
+    content TEXT NOT NULL, -- 약관 원문 (필요 시 Markdown/HTML)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE -- 현재 유효한 버전 표시
+);
+
 -- 공급자 테이블
 CREATE TABLE suppliers (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     contact_email VARCHAR(255),
+    address VARCHAR(255),
     business_license_number VARCHAR(100),       -- 사업자 번호 (선택)
     is_verified BOOLEAN DEFAULT FALSE,           -- 인증 여부
     image_url VARCHAR(255),                -- 공급자 이미지 URL (선택)
@@ -15,6 +25,7 @@ CREATE TABLE users (
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255),
     name VARCHAR(100),
+    gender ENUM('male', 'female') NOT NULL,
     birth DATE NOT NULL, -- 생년월일 입력 형식을 'xxxx-xx-xx'로 하거나 STR_TO_DATE('20010402', '%Y%m%d')로 하거나 선택.
     role ENUM('consumer', 'supplier', 'admin') NOT NULL,
     supplier_id INT DEFAULT NULL,                -- 공급자 ID (소비자일 경우 NULL)
@@ -43,12 +54,13 @@ CREATE TABLE user_allergens (
     FOREIGN KEY (allergen_id) REFERENCES allergens(id) ON DELETE CASCADE
 );
 
--- 식품 테이블 -> 식품에서 바코를 따로 빼서 API에 맞게 따로 테이블
+-- 식품 테이블
 CREATE TABLE foods (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     ingredient TEXT,
     image_url VARCHAR(255), -- 이미지 URL (선택)
+    source_type ENUM('user','ocr','crowl'),
     supplier_id INT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE CASCADE
@@ -93,7 +105,7 @@ CREATE TABLE qr_links (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_food FOREIGN KEY (food_id) REFERENCES foods(id) ON DELETE CASCADE,
     CONSTRAINT fk_bundle FOREIGN KEY (bundle_id) REFERENCES food_bundles(id) ON DELETE CASCADE,
-    CONSTRAINT fk_supplier FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE CASCADE,
+    CONSTRAINT fk_supplier FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE CASCADE
 );
 
 -- 식품 바코드 테이블
@@ -129,18 +141,23 @@ CREATE TABLE symptoms_log (
 
 -- 즐겨찾기 테이블
 CREATE TABLE favorites (
+    id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
+    type ENUM('food', 'bundle', 'supplier') NOT NULL,
     food_id INT,
-    PRIMARY KEY (user_id, food_id),
+    bundle_id INT,
+    supplier_id INT,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (food_id) REFERENCES foods(id) ON DELETE CASCADE
+    FOREIGN KEY (food_id) REFERENCES foods(id) ON DELETE CASCADE,
+    FOREIGN KEY (bundle_id) REFERENCES food_bundles(id) ON DELETE CASCADE,
+    FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE CASCADE
 );
 
 -- OCR 결과 저장 테이블
 CREATE TABLE ocr_results (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
-    input_food_name VARCHAR(255),,
+    input_food_name VARCHAR(255),
     suggested_food_name VARCHAR(255),
     uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -149,18 +166,21 @@ CREATE TABLE ocr_results (
 -- 식품 조회 이력 테이블
 CREATE TABLE view_log (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
-    food_id INT,
+    user_id INT NOT NULL,
+    type ENUM('food', 'bundle', 'supplier') NOT NULL,
+    food_id INT DEFAULT NULL,
+    bundle_id INT DEFAULT NULL,
+    supplier_id INT DEFAULT NULL,
     viewed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (food_id) REFERENCES foods(id) ON DELETE CASCADE
-);
+    FOREIGN KEY (food_id) REFERENCES foods(id) ON DELETE CASCADE,
+    FOREIGN KEY (bundle_id) REFERENCES food_bundles(id) ON DELETE CASCADE,
+    FOREIGN KEY (supplier_id) REFERENCES suppliers(id) ON DELETE CASCADE,
 
--- 동의 약관 테이블(new)
-CREATE TABLE terms_versions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    version VARCHAR(20) NOT NULL, -- 예: '1.0', '1.1'
-    content TEXT NOT NULL, -- 약관 원문 (필요 시 Markdown/HTML)
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    is_active BOOLEAN DEFAULT TRUE -- 현재 유효한 버전 표시
+    CHECK (
+        (type = 'food' AND food_id IS NOT NULL AND bundle_id IS NULL AND supplier_id IS NULL) OR
+        (type = 'bundle' AND bundle_id IS NOT NULL AND food_id IS NULL AND supplier_id IS NULL) OR
+        (type = 'supplier' AND supplier_id IS NOT NULL AND food_id IS NULL AND bundle_id IS NULL)
+    )
 );
