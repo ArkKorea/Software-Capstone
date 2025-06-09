@@ -39,26 +39,25 @@ def render_history_item(item, page: ft.Page):
     if item_type == "food" or item_type == "bundle":
         card = create_product_card(data)
         card.on_click = lambda e: product_detail_popup(page, data)
-
+        
     elif item_type == "supplier":
-        # 👉 추가적으로 products를 받아와야 함
         def on_click(e):
-            products = []
-            try:
-                with httpx.Client(base_url=BASE_URL) as client:
-                    res = client.post(
-                        "/api/store/products",
-                        json={"store_id": data["store_id"]},
-                        headers=get_auth_headers()
-                    )
-                    if res.status_code == 200:
-                        products = res.json().get("products", [])
-            except Exception as e:
-                print("매장 제품 조회 실패:", e)
+            store_info = {
+                "store_id": data["id"],
+                "name": data["name"],
+                "address": data.get("address") or "주소 정보 없음",
+                "is_favorite": data.get("is_favorite", False)
+            }
+            products = data.get("products", [])
+            store_detail_popup(page, store_info, products)
 
-            store_detail_popup(page, data, products)
-
-        card = create_store_card(data)
+        store_card_data = {
+            "store_id": data["id"],
+            "name": data["name"],
+            "address": data.get("address") or "주소 정보 없음",
+            "is_favorite": data.get("is_favorite", False)
+        }
+        card = create_store_card(store_card_data)
         card.on_click = on_click
 
     else:

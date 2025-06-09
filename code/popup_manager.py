@@ -1,4 +1,5 @@
 import flet as ft
+from flet import Ref
 from app_state import access_token
 import httpx
 from config import BASE_URL
@@ -15,11 +16,64 @@ def record_history(item_type: str, item_id: int):
     except Exception as e:
         print(f"[ERROR] history 기록 실패: {e}")
 
+def toggle_favorite(page: ft.Page, item_type: str, item_id: int, is_fav_ref: Ref):
+    import httpx
+    from config import BASE_URL
+    from app_state import access_token
+
+    action = "remove" if is_fav_ref.current else "add"
+    body = {
+        "type": item_type,
+        "action": action,
+    }
+    if item_type == "food":
+        body["food_id"] = item_id
+    elif item_type == "bundle":
+        body["bundle_id"] = item_id
+    elif item_type == "supplier":
+        body["supplier_id"] = item_id
+
+    try:
+        with httpx.Client(base_url=BASE_URL) as client:
+            res = client.post(
+                "/api/user/favorites",
+                headers={"Authorization": f"Bearer {access_token}"},
+                json=body
+            )
+            if res.status_code == 200:
+                is_fav_ref.current = not is_fav_ref.current
+                page.update()
+    except Exception as e:
+        print("즐겨찾기 실패:", e)
+
+
 def product_detail_popup(page: ft.Page, product: dict):
-    record_history("food" if product.get("bundle_id") is None else "bundle", product["product_id" if product.get("bundle_id") is None else "bundle_id"])
+    is_bundle = product.get("bundle_id") is not None
+    product_id = product["bundle_id"] if is_bundle else product["product_id"]
+    product_type = "bundle" if is_bundle else "food"
+
+    record_history(product_type, product_id)
+
     allergens = product.get("allergens_hit") or product.get("allergen_hit") or []
     safe_allergens = product.get("allergens_safe") or product.get("allergen_safe") or []
-    is_fav = product.get("is_favorite", False)
+    is_fav_ref = Ref[bool]()
+    is_fav_ref.current = product.get("is_favorite", False)
+
+    def update_star_icon():
+        star_icon.name = "star" if is_fav_ref.current else "star_border"
+        star_icon.icon_color = ft.Colors.AMBER if is_fav_ref.current else ft.Colors.GREY_600
+        page.update()
+
+    star_icon = ft.IconButton(
+        icon="star" if is_fav_ref.current else "star_border",
+        icon_color=ft.Colors.AMBER if is_fav_ref.current else ft.Colors.GREY_600,
+        icon_size=20,
+        on_click=lambda e: (
+            toggle_favorite(page, product_type, product_id, is_fav_ref),
+            update_star_icon()
+            
+        )
+    )
 
     popup = ft.Container(
         alignment=ft.alignment.center,
@@ -45,17 +99,10 @@ def product_detail_popup(page: ft.Page, product: dict):
                             )
                         ]
                     ),
-                    ft.Row(
-                        spacing=5,
-                        controls=[
-                            ft.Text(product["name"], size=20, weight=ft.FontWeight.BOLD),
-                            ft.Icon(
-                                name="star" if is_fav else "star_border",
-                                color=ft.Colors.AMBER if is_fav else ft.Colors.GREY_600,
-                                size=20
-                            )
-                        ]
-                    ),
+                    ft.Row(spacing=5, controls=[
+                        ft.Text(product["name"], size=20, weight=ft.FontWeight.BOLD),
+                        star_icon
+                    ]),
                     ft.Text(f"📍 {product.get('supplier_name', '')}", size=14, color=ft.Colors.GREY_600),
                     ft.Text("알레르기 유발 성분", size=14, weight=ft.FontWeight.BOLD),
                     ft.Text(", ".join(allergens) if allergens else "없음", size=14, color=ft.Colors.RED_400),
@@ -68,7 +115,7 @@ def product_detail_popup(page: ft.Page, product: dict):
                         controls=[
                             ft.ElevatedButton(
                                 text="닫기",
-                                on_click=lambda e: (page.overlay.clear(), page.update()),
+                                on_click=lambda e: (page.overlay.clear(), page.go(page.route, replace=True)),
                                 style=ft.ButtonStyle(
                                     bgcolor=ft.Colors.GREEN,
                                     color=ft.Colors.WHITE,
@@ -82,11 +129,10 @@ def product_detail_popup(page: ft.Page, product: dict):
             )
         )
     )
+
     page.overlay.clear()
     page.overlay.append(popup)
     page.update()
-
-import flet as ft
 
 def show_all_products_popup(page: ft.Page, products: list):
     popup = ft.Container(
@@ -133,6 +179,37 @@ def show_all_products_popup(page: ft.Page, products: list):
 
 def store_detail_popup(page: ft.Page, store_info: dict, products: list, show_all_button: bool = False):
     record_history("supplier", store_info["store_id"])
+    
+    try:
+        with httpx.Client(base_url=BASE_URL) as client:
+            res = client.post(
+                "/api/store/products",
+                json={"store_id": store_info["store_id"]},
+                headers={"Authorization": f"Bearer {app_state.access_token}"}
+            )
+            if res.status_code == 200:
+                products = res.json().get("products", [])
+    except Exception as e:
+        print("상품 목록 조회 실패:", e)
+
+    is_fav_ref = Ref[bool]()
+    is_fav_ref.current = store_info.get("is_favorite", False)
+
+    def update_star_icon():
+        star_icon.icon = "star" if is_fav_ref.current else "star_border"
+        star_icon.icon_color = ft.Colors.AMBER if is_fav_ref.current else ft.Colors.GREY_600
+        page.update()
+
+    star_icon = ft.IconButton(
+        icon="star" if is_fav_ref.current else "star_border",
+        icon_color=ft.Colors.AMBER if is_fav_ref.current else ft.Colors.GREY_600,
+        icon_size=20,
+        on_click=lambda e: (
+            toggle_favorite(page, "supplier", store_info["store_id"], is_fav_ref),
+            update_star_icon()
+        )
+    )
+
     def build_product_list():
         items = [
             ft.Text(f"- {p['name']}", size=12, color=ft.Colors.GREY_700)
@@ -153,6 +230,7 @@ def store_detail_popup(page: ft.Page, store_info: dict, products: list, show_all
                     height=30
                 ),
                 ft.Text(store_info["name"], size=20, weight=ft.FontWeight.BOLD),
+                star_icon  # ⭐ 즐겨찾기 버튼 추가됨
             ]
         ),
         ft.Text(f"주소: {store_info['address']}", size=14, color=ft.Colors.GREY_600),
@@ -176,7 +254,7 @@ def store_detail_popup(page: ft.Page, store_info: dict, products: list, show_all
             controls=[
                 ft.ElevatedButton(
                     text="닫기",
-                    on_click=lambda e: (page.overlay.clear(), page.update()),
+                    on_click=lambda e: (page.overlay.clear(), page.go(page.route, replace=True)),
                     style=ft.ButtonStyle(
                         bgcolor=ft.Colors.GREEN,
                         color=ft.Colors.WHITE,

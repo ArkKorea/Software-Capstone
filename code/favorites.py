@@ -136,6 +136,7 @@ def favorites_screen(page: ft.Page):
 
     def update_content(index):
         tab_state.current = index
+        page.client_storage.set("favorite_tab", "store" if index == 0 else "food")
         store_box.current.bgcolor = ft.Colors.GREEN_400 if index == 0 else ft.Colors.GREY_300
         food_box.current.bgcolor = ft.Colors.GREEN_400 if index == 1 else ft.Colors.GREY_300
 
@@ -167,9 +168,12 @@ def favorites_screen(page: ft.Page):
         favorites_store = fetch_favorite_suppliers()
         products, bundles = fetch_favorite_items()
         favorites_food = products + bundles
-        update_content(0)
+        initial_tab = page.client_storage.get("favorite_tab") or "store"
+        update_content(0 if initial_tab == "store" else 1)
 
-    page.on_view_pop = lambda _: update_content(0)
+    page.on_view_pop = lambda _: update_content(
+        0 if page.client_storage.get("favorite_tab") == "store" else 1
+        )
 
     view = ft.View(
         "/favorites",
