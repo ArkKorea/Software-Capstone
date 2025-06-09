@@ -15,8 +15,8 @@ def get_product_detail_service(db: Session, product_id: int, user: User) -> Prod
 
     # if user.role in (RoleEnum.consumer, RoleEnum.supplier):
     #     add_or_update_view_log(db, user.id, "food", product_id)
-
-    user_allergen_names = {a.name for a in user.allergen} if user.role == RoleEnum.consumer else set()
+    # user_allergen_names = {a.name for a in user.allergen} if user.role == RoleEnum.consumer else set()
+    user_allergen_names = {a.name for a in user.allergen}
     food_allergen_names = {a.name for a in food.allergen}
 
     allergen_hit = list(user_allergen_names & food_allergen_names)
@@ -44,7 +44,8 @@ def get_bundle_detail_service(db: Session, bundle_id: int, user: User) -> Bundle
     # if user.role in ("consumer", "supplier"):
     #     add_or_update_view_log(db, user.id, "bundle", bundle_id)
 
-    user_allergen_names = {a.name for a in user.allergens} if user.role == "consumer" else set()
+    # user_allergen_names = {a.name for a in user.allergens} if user.role == "consumer" else set()
+    user_allergen_names = {a.name for a in user.allergens}
 
     is_favorite = is_bundle_favorite(db, user.id, bundle_id)
 
@@ -87,7 +88,8 @@ def get_supplier_detail_service(db: Session, supplier_id: int, user: User) -> Su
     # if user.role in ("consumer", "supplier"):
     #     add_or_update_view_log(db, user.id, "supplier", supplier_id)
 
-    user_allergen_names = {a.name for a in user.allergens} if user.role == "consumer" else set()
+    # user_allergen_names = {a.name for a in user.allergens} if user.role == "consumer" else set()
+    user_allergen_names = {a.name for a in user.allergens}
 
     is_favorite = is_supplier_favorite(db, user.id, supplier_id)
 

@@ -29,6 +29,7 @@ class ProductCreate(BaseModel):
     ingredient: Optional[str] = None
     image_base64: Optional[str] = None  # 선택적
     allergies: List[str]  # 예: ["우유", "대두"]
+    supplier_name: str
 
 class ProductCreateResponse(BaseModel):
     product_id: int
