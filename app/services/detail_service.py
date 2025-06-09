@@ -13,8 +13,8 @@ def get_product_detail_service(db: Session, product_id: int, user: User) -> Prod
     if not food:
         raise HTTPException(status_code=404, detail="상품을 찾을 수 없습니다.")
 
-    if user.role in (RoleEnum.consumer, RoleEnum.supplier):
-        add_or_update_view_log(db, user.id, "food", product_id)
+    # if user.role in (RoleEnum.consumer, RoleEnum.supplier):
+    #     add_or_update_view_log(db, user.id, "food", product_id)
 
     user_allergen_names = {a.name for a in user.allergen} if user.role == RoleEnum.consumer else set()
     food_allergen_names = {a.name for a in food.allergen}
@@ -41,8 +41,8 @@ def get_bundle_detail_service(db: Session, bundle_id: int, user: User) -> Bundle
     if not bundle:
         raise HTTPException(status_code=404, detail="묶음 상품을 찾을 수 없습니다.")
 
-    if user.role in ("consumer", "supplier"):
-        add_or_update_view_log(db, user.id, "bundle", bundle_id)
+    # if user.role in ("consumer", "supplier"):
+    #     add_or_update_view_log(db, user.id, "bundle", bundle_id)
 
     user_allergen_names = {a.name for a in user.allergens} if user.role == "consumer" else set()
 
@@ -84,8 +84,8 @@ def get_supplier_detail_service(db: Session, supplier_id: int, user: User) -> Su
     if not supplier:
         raise HTTPException(status_code=404, detail="판매자를 찾을 수 없습니다.")
 
-    if user.role in ("consumer", "supplier"):
-        add_or_update_view_log(db, user.id, "supplier", supplier_id)
+    # if user.role in ("consumer", "supplier"):
+    #     add_or_update_view_log(db, user.id, "supplier", supplier_id)
 
     user_allergen_names = {a.name for a in user.allergens} if user.role == "consumer" else set()
 

@@ -14,7 +14,6 @@ class ViewLogItem(BaseModel):
 class ViewLogResponse(BaseModel):
     products: list[ViewLogItem]
 
-
 class HistoryItem(BaseModel):
     type: Literal["food", "bundle", "supplier"]
     viewed_at: datetime
@@ -22,3 +21,7 @@ class HistoryItem(BaseModel):
 
 class UnifiedHistoryResponse(BaseModel):
     history: List[HistoryItem]
+
+class HistoryLogRequest(BaseModel):
+    type: Literal["food", "bundle", "supplier"]
+    target_id: int
