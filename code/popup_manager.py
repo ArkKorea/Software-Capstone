@@ -1,6 +1,5 @@
 import flet as ft
 from flet import Ref
-from app_state import access_token
 import httpx
 from config import BASE_URL
 import app_state
@@ -16,16 +15,10 @@ def record_history(item_type: str, item_id: int):
     except Exception as e:
         print(f"[ERROR] history 기록 실패: {e}")
 
-def toggle_favorite(page: ft.Page, item_type: str, item_id: int, is_fav_ref: Ref):
-    import httpx
-    from config import BASE_URL
-    from app_state import access_token
 
+def toggle_favorite(page: ft.Page, item_type: str, item_id: int, is_fav_ref: Ref):
     action = "remove" if is_fav_ref.current else "add"
-    body = {
-        "type": item_type,
-        "action": action,
-    }
+    body = {"type": item_type, "action": action}
     if item_type == "food":
         body["food_id"] = item_id
     elif item_type == "bundle":
@@ -37,7 +30,7 @@ def toggle_favorite(page: ft.Page, item_type: str, item_id: int, is_fav_ref: Ref
         with httpx.Client(base_url=BASE_URL) as client:
             res = client.post(
                 "/api/user/favorites",
-                headers={"Authorization": f"Bearer {access_token}"},
+                headers={"Authorization": f"Bearer {app_state.access_token}"},
                 json=body
             )
             if res.status_code == 200:
@@ -72,7 +65,6 @@ def product_detail_popup(page: ft.Page, product: dict):
         on_click=lambda e: (
             toggle_favorite(page, product_type, product_id, is_fav_ref),
             update_star_icon()
-            
         )
     )
 
@@ -134,6 +126,7 @@ def product_detail_popup(page: ft.Page, product: dict):
     page.overlay.clear()
     page.overlay.append(popup)
     page.update()
+
 
 def show_all_products_popup(page: ft.Page, products: list):
     popup = ft.Container(
@@ -288,11 +281,6 @@ def store_detail_popup(page: ft.Page, store_info: dict, products: list, show_all
 
 
 def product_manage_popup(page: ft.Page, product: dict):
-    from config import BASE_URL
-
-    is_fav = product.get("is_favorite", False)
-
-    # 이미지 URL이 상대경로일 경우 BASE_URL 붙이기
     image_url = product.get("image_url", "")
     image_url = f"{BASE_URL}{image_url}" if image_url.startswith("/static") else image_url
 
@@ -302,78 +290,64 @@ def product_manage_popup(page: ft.Page, product: dict):
         page.go("/productedit", data=product)
 
     def on_delete(e):
-        try:
-            with httpx.Client() as client:
-                res = client.post(
-                    f"{BASE_URL}/api/product/delete",
-                    json={"product_id": product["product_id"]},
-                    headers={"Authorization": f"Bearer {app_state.access_token}"}
-                )
-                if res.status_code == 200:
-                    print("✅ 삭제 성공")
-                    page.overlay.clear()
-                    page.go("/myproductlist", replace=True)
-                else:
-                    print("❌ 삭제 실패:", res.status_code, res.text)
-        except Exception as ex:
-            print("❌ 예외 발생:", ex)
-        page.update()
+        page.overlay.clear()
+        confirm_delete_product(page, product["product_id"])
 
     popup = ft.Container(
         alignment=ft.alignment.center,
-        bgcolor=ft.Colors.with_opacity(0.5, ft.Colors.BLACK),
+        bgcolor=ft.Colors.with_opacity(0.4, ft.Colors.BLACK),
         content=ft.Container(
             bgcolor=ft.Colors.WHITE,
             border_radius=20,
             padding=20,
-            width=350,
+            width=360,
             height=620,
             content=ft.Column(
                 scroll=ft.ScrollMode.AUTO,
-                spacing=12,
+                spacing=16,
                 controls=[
-                    ft.Row(
-                        alignment=ft.MainAxisAlignment.CENTER,
-                        controls=[ft.Image(
+                    ft.Container(
+                        alignment=ft.alignment.center,
+                        content=ft.Image(
                             src=image_url,
-                            fit=ft.ImageFit.COVER,
-                            height=180,
-                            border_radius=ft.border_radius.all(12)
-                        )]
+                            fit=ft.ImageFit.CONTAIN,
+                            height=160,
+                            border_radius=12
+                        )
                     ),
-                    ft.Text(product["name"], size=20, weight=ft.FontWeight.BOLD),
-                    ft.Text(f"📍 {product.get('supplier_name', '')}", size=14, color=ft.Colors.GREY_600),
-                    ft.Text("원재료", size=14, weight=ft.FontWeight.BOLD),
-                    ft.Text(product.get("ingredient", ""), size=13),
-                    ft.Text("전체 성분", size=14, weight=ft.FontWeight.BOLD),
-                    ft.Text(product.get("ingredients_text", "성분 정보 없음"), size=13),
-
+                    ft.Text(product["name"], size=22, weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER),
+                    ft.Text(f"📍 공급처: {product.get('supplier_name', '정보 없음')}", size=14, color=ft.Colors.GREY_600),
+                    ft.Divider(),
+                    ft.Text("📌 원재료", size=14, weight=ft.FontWeight.BOLD),
+                    ft.Text(product.get("ingredient", "정보 없음"), size=13, color=ft.Colors.GREY_800),
+                    ft.Text("🧪 전체 성분", size=14, weight=ft.FontWeight.BOLD),
+                    ft.Text(product.get("ingredients_text", "성분 정보 없음"), size=13, color=ft.Colors.GREY_800),
+                    ft.Divider(),
                     ft.Row(
                         alignment=ft.MainAxisAlignment.SPACE_EVENLY,
                         controls=[
                             ft.ElevatedButton(
-                                "수정",
+                                text="✏️ 수정",
                                 on_click=on_edit,
                                 style=ft.ButtonStyle(
                                     bgcolor=ft.Colors.BLUE,
                                     color=ft.Colors.WHITE,
-                                    padding=ft.Padding(30, 10, 30, 10),
+                                    padding=ft.Padding(20, 10, 20, 10),
                                     shape=ft.RoundedRectangleBorder(radius=10)
                                 )
                             ),
                             ft.ElevatedButton(
-                                "삭제",
+                                text="🗑️ 삭제",
                                 on_click=on_delete,
                                 style=ft.ButtonStyle(
                                     bgcolor=ft.Colors.RED,
                                     color=ft.Colors.WHITE,
-                                    padding=ft.Padding(30, 10, 30, 10),
+                                    padding=ft.Padding(20, 10, 20, 10),
                                     shape=ft.RoundedRectangleBorder(radius=10)
                                 )
                             )
                         ]
                     ),
-
                     ft.Row(
                         alignment=ft.MainAxisAlignment.CENTER,
                         controls=[
@@ -400,7 +374,7 @@ def product_manage_popup(page: ft.Page, product: dict):
 
 
 def confirm_delete_product(page: ft.Page, product_id: int):
-    def delete_action(e):
+    def delete_product():
         try:
             with httpx.Client() as client:
                 res = client.post(
@@ -410,34 +384,59 @@ def confirm_delete_product(page: ft.Page, product_id: int):
                 )
                 if res.status_code == 200:
                     print("✅ 삭제 성공")
-                    page.dialog.open = False
-                    page.update()
-                    page.go("/productmanagement", replace=True)
+                    page.overlay.clear()
+                    page.go("/myproductlist", replace=True)
                 else:
                     print("❌ 삭제 실패:", res.status_code, res.text)
         except Exception as ex:
             print("❌ 예외 발생:", ex)
         page.update()
 
-    def cancel_action(e):
-        dialog.open = False
-        page.update()
-
-    print(f"[DEBUG] 삭제 확인 팝업 호출 - product_id: {product_id}")
-
-    dialog = ft.AlertDialog(
-        modal=True,
-        title=ft.Text("정말 삭제하시겠습니까?"),
-        content=ft.Text("이 작업은 되돌릴 수 없습니다."),
-        actions=[
-            ft.TextButton("취소", on_click=cancel_action),
-            ft.TextButton("삭제", on_click=delete_action),
-        ],
-        actions_alignment=ft.MainAxisAlignment.END,
+    popup = ft.Container(
+        alignment=ft.alignment.center,
+        bgcolor=ft.Colors.with_opacity(0.5, ft.Colors.BLACK),
+        content=ft.Container(
+            width=280,
+            height=200,  # ✅ 세로 길이 명시적으로 지정
+            bgcolor=ft.Colors.WHITE,
+            border_radius=16,
+            padding=ft.Padding(20, 20, 20, 20),
+            content=ft.Column(
+                spacing=10,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                controls=[
+                    ft.Text("정말 삭제하시겠습니까?", size=16, weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER),
+                    ft.Text("이 작업은 되돌릴 수 없습니다.", size=13, color=ft.Colors.RED_400, text_align=ft.TextAlign.CENTER),
+                    ft.Row(
+                        alignment=ft.MainAxisAlignment.SPACE_EVENLY,
+                        controls=[
+                            ft.ElevatedButton(
+                                text="취소",
+                                on_click=lambda e: (page.overlay.clear(), page.update()),
+                                style=ft.ButtonStyle(
+                                    bgcolor=ft.Colors.GREY_400,
+                                    color=ft.Colors.WHITE,
+                                    shape=ft.RoundedRectangleBorder(radius=8),
+                                    padding=ft.Padding(20, 8, 20, 8)
+                                )
+                            ),
+                            ft.ElevatedButton(
+                                text="삭제",
+                                on_click=lambda e: delete_product(),
+                                style=ft.ButtonStyle(
+                                    bgcolor=ft.Colors.RED,
+                                    color=ft.Colors.WHITE,
+                                    shape=ft.RoundedRectangleBorder(radius=8),
+                                    padding=ft.Padding(20, 8, 20, 8)
+                                )
+                            )
+                        ]
+                    )
+                ]
+            )
+        )
     )
 
-    # 💡 기존 overlay 제거 후 팝업 등록
     page.overlay.clear()
-
-    # ✅ 핵심 수정: show_dialog() 사용
-    page.show_dialog(dialog)
+    page.overlay.append(popup)
+    page.update()

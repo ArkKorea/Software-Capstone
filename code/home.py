@@ -169,7 +169,7 @@ def home_screen(page: ft.Page):
                         content=ft.Row(
                             controls=[
                                 category_button("QR 코드", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_category_qr.png"),
-                                category_button("OCR 인식", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_category_ocr.png","/ocr"),
+                                category_button("OCR 인식", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_category_ocr.png"),
                                 category_button("내 상품 관리", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_category_myitems.png", "/productmanagement"),
                                 category_button("내 식단 관리", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_category_mydiet.png", "/dietmanagement"),
                                 category_button("즐겨찾기", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/home/home_category_favorites.png", "/favorites"),
