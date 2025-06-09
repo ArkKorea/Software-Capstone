@@ -31,6 +31,7 @@ from search_view import search_view_screen
 from notice import notice_screen
 from terms import terms_screen
 from datetime import date
+from ocr_screen import ocr_screen
 
 
 async def main(page: ft.Page):
@@ -110,6 +111,8 @@ async def main(page: ft.Page):
             date_str = qs.get("date", [None])[0]
             if date_str:
                 page.views.append(day_diet_screen(page, date.fromisoformat(date_str)))
+        elif route == "/ocr":
+            page.views.append(ocr_screen(page))
 
         page.update()
 
