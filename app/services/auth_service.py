@@ -100,7 +100,7 @@ def register_user(request: RegisterRequest, db: Session) -> RegisterResponse:
 
 # 인증용 이메일 발송
 def send_verification_email(to_email: str, token: str):
-    verify_url = f"http://13.124.217.90/api/auth/verify?token={token}"
+    verify_url = f"{server_url}/api/auth/verify?token={token}"
     subject = "이메일 인증을 완료해 주세요"
     body = f"""
     아래 링크를 클릭하여 이메일 인증을 완료해 주세요:
