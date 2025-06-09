@@ -1,6 +1,8 @@
 from pydantic import BaseModel
-from typing import Optional, Literal
+from typing import Optional, Literal, Union, List
 from datetime import datetime
+from app.schemas.product import ProductResponse
+from app.schemas.search import Store, Bundle
 
 class ViewLogItem(BaseModel):
     type: Literal["food", "bundle", "supplier"]
@@ -11,3 +13,12 @@ class ViewLogItem(BaseModel):
 
 class ViewLogResponse(BaseModel):
     products: list[ViewLogItem]
+
+
+class HistoryItem(BaseModel):
+    type: Literal["food", "bundle", "supplier"]
+    viewed_at: datetime
+    data: Union[ProductResponse, Bundle, Store]
+
+class UnifiedHistoryResponse(BaseModel):
+    history: List[HistoryItem]
