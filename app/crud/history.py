@@ -29,6 +29,7 @@ def add_or_update_view_log(db: Session, user_id: int, target_type: FavoriteType,
         db.add(log)
 
     db.flush()
+    db.commit()
     truncate_view_logs(db, user_id)
 
 

@@ -13,7 +13,7 @@ def get_product_detail_service(db: Session, product_id: int, user: User) -> Prod
     if not food:
         raise HTTPException(status_code=404, detail="상품을 찾을 수 없습니다.")
 
-    if user.role in ("consumer", "supplier"):
+    if user.role in (RoleEnum.consumer, RoleEnum.supplier):
         add_or_update_view_log(db, user.id, "food", product_id)
 
     user_allergen_names = {a.name for a in user.allergen} if user.role == RoleEnum.consumer else set()
