@@ -6,12 +6,20 @@ from app.models.base import Base
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi import Request
+from fastapi.staticfiles import StaticFiles
+import os
 
 templates = Jinja2Templates(directory="app/templates")
 
 app = FastAPI()
 
 print(list(Base.registry._class_registry.keys()))
+
+app.mount(
+    "/static",
+    StaticFiles(directory="app/static"),
+    name="static"
+)
 
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(product.router, prefix="/api/product", tags=["Product"])
