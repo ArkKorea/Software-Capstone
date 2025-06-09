@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from app.crud.search import *
 from .detail_service import get_product_detail_service, get_bundle_detail_service
 from app.models.user import User
+from app.crud.favorite import is_bundle_favorite, is_supplier_favorite
 
 
 def search_product(request: SearchRequest, db: Session, current_user: User) -> SearchProductResponse:
@@ -29,17 +30,25 @@ def search_product(request: SearchRequest, db: Session, current_user: User) -> S
         
         return_value.bundles.append(Bundle(bundle_id=bundle.id, name=bundle.name, image_url=bundle.image_url or "",
                                            allergen_hit=bundle_allergen_hit, allergen_safe=bundle_allergen_safe,
-                                           supplier_id=bundle.supplier.id, supplier_name=bundle.supplier.name))
+                                           supplier_id=bundle.supplier.id, supplier_name=bundle.supplier.name,
+                                           is_favorite=is_bundle_favorite(db, current_user.id, bundle.id)))
     return return_value
 
-def search_store(request: SearchRequest, db: Session) -> SearchStoreResponse:
+def search_store(request: SearchRequest, db: Session, current_user: User) -> SearchStoreResponse:
     result = get_store_by_keyword(request.query, db)
     if not result:
         raise HTTPException(status_code=404, detail="해당 지점을 찾을 수 없습니다.")
+
     return SearchStoreResponse(
-        stores=[Store(store_id=store.id,
-                      name=store.name,
-                      address=store.address or "") for store in result]
+        stores=[
+            Store(
+                store_id=store.id,
+                name=store.name,
+                is_favorite=is_supplier_favorite(db, current_user.id, store.id),
+                address=store.address or ""
+            )
+            for store in result
+        ]
     )
 
 def get_store_product_list(request: StoreProductListRequest, db: Session, current_user: User) -> StoreProductListResponse:
@@ -51,6 +60,7 @@ def get_store_product_list(request: StoreProductListRequest, db: Session, curren
     return StoreProductListResponse(
         store=Store(store_id=store.id,
                     name=store.name or "",
-                    address=store.address or ""),
+                    address=store.address or "",
+                   is_favorite=is_supplier_favorite(db, current_user.id, store.id)),
         products=[get_product_detail_service(db, product.id, current_user) for product in products]
     )

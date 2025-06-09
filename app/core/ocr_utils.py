@@ -17,9 +17,16 @@ def preprocess_image(image_path: str):
     return cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
 
 def extract_known_allergens(text: str):
-    return [a for a in KOREAN_ALLERGENS if a in text]
+    # OCR 결과와 알러지 목록 모두 공백 제거 후 비교
+    clean_text = text.replace(" ", "")
+    return [a for a in KOREAN_ALLERGENS if a.replace(" ", "") in clean_text]
 
+# 사용자 알러지 비교 (공백 제거된 버전으로 비교)
 def match_user_allergens(extracted: list, user_allergens: list):
-    hit = [a for a in extracted if a in user_allergens]
-    safe = [a for a in extracted if a not in user_allergens]
+    # 비교를 위해 양쪽 모두 공백 제거
+    user_allergens_clean = [a.replace(" ", "") for a in user_allergens]
+    extracted_clean = [a.replace(" ", "") for a in extracted]
+
+    hit = [e for e in extracted_clean if e in user_allergens_clean]
+    safe = [e for e in extracted_clean if e not in user_allergens_clean]
     return hit, safe

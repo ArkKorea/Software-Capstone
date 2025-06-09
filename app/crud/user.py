@@ -7,6 +7,12 @@ from datetime import datetime, timedelta
 def get_user_by_email(db: Session, email: str):
     return db.query(User).filter(User.email == email).first()
 
+def delete_user_by_email(db: Session, email: str):
+    user = get_user_by_email(db, email)
+    if user:
+        db.delete(user)
+        db.commit()
+
 # 유저 생성 함수
 def create_user(db: Session, user_data: RegisterRequest, password_hash: str, email_token: str) -> User:
     new_user = User(
@@ -24,7 +30,7 @@ def create_user(db: Session, user_data: RegisterRequest, password_hash: str, ema
     db.refresh(new_user)
     return new_user
 
-# 이메일 인증증
+# 이메일 인증
 # 이메일 인증 토큰으로 유저 찾기
 def get_user_by_verification_token(db: Session, token: str) -> User | None:
     print(">>> 쿼리용 토큰:", repr(token))  # 공백 유무 확인
