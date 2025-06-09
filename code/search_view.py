@@ -103,7 +103,8 @@ def search_view_screen(page: ft.Page):
         allergens = product.get("allergens_hit") or product.get("allergen_hit") or []
         safe_allergens = product.get("allergens_safe") or product.get("allergen_safe") or []
         is_fav = product.get("is_favorite", False)
-
+        image_url = f"{BASE_URL}{product['image_url']}" if product["image_url"].startswith("/static") else product["image_url"]
+        
         return ft.Container(
             padding=10,
             bgcolor=ft.Colors.WHITE,
@@ -113,7 +114,7 @@ def search_view_screen(page: ft.Page):
             content=ft.Row(
                 controls=[
                     ft.Image(
-                        src=product["image_url"],
+                        src=image_url,
                         width=80,
                         height=80,
                         fit=ft.ImageFit.COVER,
