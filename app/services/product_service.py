@@ -19,6 +19,8 @@ from sqlalchemy import delete
 from typing import Union
 from app.services.detail_service import get_bundle_detail_service, get_product_detail_service
 
+from app.crud.supplier import get_supplier_by_name, create_supplier
+
 UPLOAD_DIR = "app/static/images/products" # 로컬 테스트 용도
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
@@ -80,7 +82,14 @@ def save_image_from_base64(base64_str: str) -> str:
 
 # 제품 등록
 def create_product_service(db: Session, product: ProductCreate, user: User) -> ProductCreateResponse:
-    supplier_id = user.supplier_id if user.supplier_id else 1
+
+    supplier_name = product.supplier_name.strip()
+    if not supplier_name:
+        supplier_name = "unknown"
+
+    supplier = get_supplier_by_name(db, product.supplier_name)
+    if not supplier:
+        supplier = create_supplier(db, name=product.supplier_name)
 
     image_url = None
     if product.image_base64:
@@ -89,7 +98,7 @@ def create_product_service(db: Session, product: ProductCreate, user: User) -> P
     food = create_product(
         db=db,
         product=product,
-        supplier_id=supplier_id,
+        supplier_id=supplier.id,
         registered_by_user_id=user.id,
         image_url=image_url or ""
     )
