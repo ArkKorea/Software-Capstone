@@ -173,7 +173,7 @@ def product_register_screen(page: ft.Page):
                 print(f"🟢 서버 응답 코드: {res.status_code}")
                 if res.status_code == 200:
                     print("✅ 등록 성공. 성공 화면으로 이동합니다.")
-                    product_id = res.json()["produt_id"]
+                    product_id = res.json()["product_id"]
                     page.go(f"/productregistersuccess?id={product_id}")
                 else:
                     print("❌ 등록 실패. 응답 내용:", res.text)

@@ -51,6 +51,7 @@ def product_detail_popup(page: ft.Page, product: dict):
     is_bundle = product.get("bundle_id") is not None
     product_id = product["bundle_id"] if is_bundle else product["product_id"]
     product_type = "bundle" if is_bundle else "food"
+    image_url = f"{BASE_URL}{product['image_url']}" if product["image_url"].startswith("/static") else product["image_url"]
 
     record_history(product_type, product_id)
 
@@ -92,7 +93,7 @@ def product_detail_popup(page: ft.Page, product: dict):
                         alignment=ft.MainAxisAlignment.CENTER,
                         controls=[
                             ft.Image(
-                                src=product["image_url"],
+                                src=image_url,
                                 fit=ft.ImageFit.COVER,
                                 height=180,
                                 border_radius=ft.border_radius.all(12)
@@ -179,7 +180,7 @@ def show_all_products_popup(page: ft.Page, products: list):
 
 def store_detail_popup(page: ft.Page, store_info: dict, products: list, show_all_button: bool = False):
     record_history("supplier", store_info["store_id"])
-    
+
     try:
         with httpx.Client(base_url=BASE_URL) as client:
             res = client.post(

@@ -57,6 +57,9 @@ def create_product_card(item):
 
     name = item.get("name", "")
     image_url = item.get("image_url", "")
+    if image_url and image_url.startswith("/static"):
+        image_url = f"{BASE_URL}{image_url}"
+
     supplier_name = item.get("supplier_name", "")
     ingredients = item.get("ingredient", "") if not is_bundle else ""
     allergens = item.get("allergens_hit") or item.get("allergen_hit") or []
@@ -67,7 +70,7 @@ def create_product_card(item):
         bgcolor=ft.Colors.WHITE,
         border_radius=10,
         shadow=ft.BoxShadow(blur_radius=6, color=ft.Colors.GREY_200),
-        on_click=lambda e: print(f"{name} 클릭됨"),  # 추후 상세 팝업 처리 가능
+        on_click=lambda e: print(f"{name} 클릭됨"),
         content=ft.Row(
             controls=[
                 ft.Image(
