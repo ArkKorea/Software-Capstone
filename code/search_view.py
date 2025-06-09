@@ -3,7 +3,7 @@ from nav_bar import nav_bar
 from config import BASE_URL
 import app_state
 import httpx
-
+from popup_manager import store_detail_popup, product_detail_popup
 
 def search_view_screen(page: ft.Page):
     search_filter = ft.Ref[str]()
@@ -53,102 +53,6 @@ def search_view_screen(page: ft.Page):
             product_controls.append(ft.Text("...", size=16, color=ft.Colors.GREY_400))
         return product_controls
 
-    def show_all_products_popup(products):
-        popup = ft.Container(
-            alignment=ft.alignment.center,
-            bgcolor=ft.Colors.with_opacity(0.5, ft.Colors.BLACK),
-            content=ft.Container(
-                bgcolor=ft.Colors.WHITE,
-                border_radius=20,
-                padding=20,
-                width=350,
-                content=ft.Column(
-                    scroll=ft.ScrollMode.AUTO,
-                    spacing=12,
-                    controls=[
-                        ft.Text("전체 판매 상품", size=18, weight=ft.FontWeight.BOLD),
-                        *product_preview(products, show_all=True),
-                        ft.Container(height=10),
-                        ft.Row(
-                            alignment=ft.MainAxisAlignment.CENTER,
-                            controls=[
-                                ft.ElevatedButton(
-                                    text="닫기",
-                                    on_click=lambda e: (page.overlay.clear(), page.update()),
-                                    style=ft.ButtonStyle(
-                                        bgcolor=ft.Colors.GREEN,
-                                        color=ft.Colors.WHITE,
-                                        padding=ft.Padding(40, 10, 40, 10),
-                                        shape=ft.RoundedRectangleBorder(radius=10)
-                                    )
-                                )
-                            ]
-                        )
-                    ]
-                )
-            )
-        )
-        page.overlay.clear()
-        page.overlay.append(popup)
-        page.update()
-
-    def store_detail_popup(store_info, products):
-        popup = ft.Container(
-            alignment=ft.alignment.center,
-            bgcolor=ft.Colors.with_opacity(0.5, ft.Colors.BLACK),
-            content=ft.Container(
-                bgcolor=ft.Colors.WHITE,
-                border_radius=20,
-                padding=20,
-                width=350,
-                content=ft.Column(
-                    spacing=12,
-                    scroll=ft.ScrollMode.AUTO,
-                    controls=[
-                        ft.Row(
-                            spacing=10,
-                            vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                            controls=[
-                                ft.Image(
-                                    src="https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image/product/store.png",
-                                    width=30,
-                                    height=30
-                                ),
-                                ft.Text(store_info["name"], size=20, weight=ft.FontWeight.BOLD),
-                            ]
-                        ),
-                        ft.Text(f"주소: {store_info['address']}", size=14, color=ft.Colors.GREY_600),
-                        ft.Container(height=10),
-                        ft.Text("판매 상품", size=14, weight=ft.FontWeight.BOLD),
-                        *product_preview(products),
-                        ft.TextButton(
-                            text="전체보기",
-                            on_click=lambda e: show_all_products_popup(products),
-                            style=ft.ButtonStyle(color=ft.Colors.BLUE)
-                        ),
-                        ft.Row(
-                            alignment=ft.MainAxisAlignment.CENTER,
-                            controls=[
-                                ft.ElevatedButton(
-                                    text="닫기",
-                                    on_click=lambda e: (page.overlay.clear(), page.update()),
-                                    style=ft.ButtonStyle(
-                                        bgcolor=ft.Colors.GREEN,
-                                        color=ft.Colors.WHITE,
-                                        padding=ft.Padding(40, 10, 40, 10),
-                                        shape=ft.RoundedRectangleBorder(radius=10)
-                                    )
-                                )
-                            ]
-                        )
-                    ]
-                )
-            )
-        )
-        page.overlay.clear()
-        page.overlay.append(popup)
-        page.update()
-
     def create_store_card(store):
         products = []
         try:
@@ -168,7 +72,7 @@ def search_view_screen(page: ft.Page):
             bgcolor=ft.Colors.WHITE,
             border_radius=10,
             shadow=ft.BoxShadow(blur_radius=6, color=ft.Colors.GREY_200),
-            on_click=lambda e: store_detail_popup(store, products),
+            on_click=lambda e: store_detail_popup(page, store, products, show_all_button=True),
             content=ft.Column(
                 spacing=6,
                 controls=[
@@ -205,7 +109,7 @@ def search_view_screen(page: ft.Page):
             bgcolor=ft.Colors.WHITE,
             border_radius=10,
             shadow=ft.BoxShadow(blur_radius=6, color=ft.Colors.GREY_200),
-            on_click=lambda e: product_detail_popup(product),
+            on_click=lambda e: product_detail_popup(page, product),
             content=ft.Row(
                 controls=[
                     ft.Image(
@@ -238,82 +142,6 @@ def search_view_screen(page: ft.Page):
                 ]
             )
         )
-
-
-    def product_detail_popup(product):
-        allergens = product.get("allergens_hit") or product.get("allergen_hit") or []
-        safe_allergens = product.get("allergens_safe") or product.get("allergen_safe") or []
-        is_fav = product.get("is_favorite", False)
-
-        popup = ft.Container(
-            alignment=ft.alignment.center,
-            bgcolor=ft.Colors.with_opacity(0.5, ft.Colors.BLACK),
-            content=ft.Container(
-                bgcolor=ft.Colors.WHITE,
-                border_radius=20,
-                padding=20,
-                width=350,
-                height=580,
-                content=ft.Column(
-                    scroll=ft.ScrollMode.AUTO,
-                    spacing=12,
-                    controls=[
-                        # ✅ 이미지 가운데 정렬
-                        ft.Row(
-                            alignment=ft.MainAxisAlignment.CENTER,
-                            controls=[
-                                ft.Image(
-                                    src=product["image_url"],
-                                    fit=ft.ImageFit.COVER,
-                                    height=180,
-                                    border_radius=ft.border_radius.all(12)
-                                )
-                            ]
-                        ),
-                        ft.Row(
-                            spacing=5,
-                            controls=[
-                                ft.Text(product["name"], size=20, weight=ft.FontWeight.BOLD),
-                                ft.Icon(
-                                    name="star" if is_fav else "star_border",
-                                    color=ft.Colors.AMBER if is_fav else ft.Colors.GREY_600,
-                                    size=20
-                                )
-                            ]
-                        ),
-                        ft.Text(f"📍 {product.get('supplier_name', '')}", size=14, color=ft.Colors.GREY_600),
-                        ft.Text("홍길동님 알레르기 유발 식품", size=14, weight=ft.FontWeight.BOLD),
-                        ft.Text(", ".join(allergens) if allergens else "없음", size=14, color=ft.Colors.RED_400),
-                        ft.Text(f"{product['name']} 알레르기 유발 식품", size=14),
-                        ft.Text(", ".join(safe_allergens) if safe_allergens else "없음", size=14, color=ft.Colors.BLUE_400),
-                        ft.Text("전체 성분", size=14, weight=ft.FontWeight.BOLD),
-                        ft.Text(product.get("ingredient", "성분 정보 없음"), size=13),
-
-                        # ✅ 닫기 버튼 가운데 정렬
-                        ft.Row(
-                            alignment=ft.MainAxisAlignment.CENTER,
-                            controls=[
-                                ft.ElevatedButton(
-                                    text="닫기",
-                                    on_click=lambda e: (page.overlay.clear(), page.update()),
-                                    style=ft.ButtonStyle(
-                                        bgcolor=ft.Colors.GREEN,
-                                        color=ft.Colors.WHITE,
-                                        padding=ft.Padding(40, 10, 40, 10),
-                                        shape=ft.RoundedRectangleBorder(radius=10)
-                                    )
-                                )
-                            ]
-                        )
-                    ]
-                )
-            )
-        )
-        page.overlay.clear()
-        page.overlay.append(popup)
-        page.update()
-
-
 
     def search_enter(e):
         keyword = search_field.value.strip()

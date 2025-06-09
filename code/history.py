@@ -14,7 +14,7 @@ def fetch_history():
         with httpx.Client() as client:
             res = client.get(f"{BASE_URL}/api/history", headers=get_auth_headers())
             if res.status_code == 200:
-                return res.json().get("history", [])  # ✅ 수정된 응답 필드명
+                return res.json().get("history", [])
     except Exception as e:
         print("검색 기록 요청 실패:", e)
     return []
@@ -31,7 +31,7 @@ def format_time(dt):
 def render_history_item(item):
     item_type = item.get("type")
     viewed_at = item.get("viewed_at")
-    data = item.get("data", {})  # ✅ 진짜 카드 정보는 여기에 있음
+    data = item.get("data", {})
 
     # viewed_at 표시용 텍스트
     viewed_text = ft.Text(f"열람 시각: {format_time(viewed_at)}", size=12, color=ft.Colors.GREY)
