@@ -79,6 +79,9 @@ async def main(page: ft.Page):
             page.views.append(my_allergy_screen(page))
         elif route == "/productregister":
             page.views.append(product_register_screen(page))
+        elif route == "/productedit":
+            product_data = page.client_storage.get("edit_product")
+            page.views.append(product_register_screen(page, mode="edit", product_data=product_data))
         elif route == "/myproductlist":
             page.views.append(my_product_list_screen(page))
         elif route == "/myproductgroup":

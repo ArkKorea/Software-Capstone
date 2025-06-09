@@ -285,3 +285,159 @@ def store_detail_popup(page: ft.Page, store_info: dict, products: list, show_all
     page.overlay.clear()
     page.overlay.append(popup)
     page.update()
+
+
+def product_manage_popup(page: ft.Page, product: dict):
+    from config import BASE_URL
+
+    is_fav = product.get("is_favorite", False)
+
+    # 이미지 URL이 상대경로일 경우 BASE_URL 붙이기
+    image_url = product.get("image_url", "")
+    image_url = f"{BASE_URL}{image_url}" if image_url.startswith("/static") else image_url
+
+    def on_edit(e):
+        page.overlay.clear()
+        page.client_storage.set("edit_product", product)
+        page.go("/productedit", data=product)
+
+    def on_delete(e):
+        try:
+            with httpx.Client() as client:
+                res = client.post(
+                    f"{BASE_URL}/api/product/delete",
+                    json={"product_id": product["product_id"]},
+                    headers={"Authorization": f"Bearer {app_state.access_token}"}
+                )
+                if res.status_code == 200:
+                    print("✅ 삭제 성공")
+                    page.overlay.clear()
+                    page.go("/myproductlist", replace=True)
+                else:
+                    print("❌ 삭제 실패:", res.status_code, res.text)
+        except Exception as ex:
+            print("❌ 예외 발생:", ex)
+        page.update()
+
+    popup = ft.Container(
+        alignment=ft.alignment.center,
+        bgcolor=ft.Colors.with_opacity(0.5, ft.Colors.BLACK),
+        content=ft.Container(
+            bgcolor=ft.Colors.WHITE,
+            border_radius=20,
+            padding=20,
+            width=350,
+            height=620,
+            content=ft.Column(
+                scroll=ft.ScrollMode.AUTO,
+                spacing=12,
+                controls=[
+                    ft.Row(
+                        alignment=ft.MainAxisAlignment.CENTER,
+                        controls=[ft.Image(
+                            src=image_url,
+                            fit=ft.ImageFit.COVER,
+                            height=180,
+                            border_radius=ft.border_radius.all(12)
+                        )]
+                    ),
+                    ft.Text(product["name"], size=20, weight=ft.FontWeight.BOLD),
+                    ft.Text(f"📍 {product.get('supplier_name', '')}", size=14, color=ft.Colors.GREY_600),
+                    ft.Text("원재료", size=14, weight=ft.FontWeight.BOLD),
+                    ft.Text(product.get("ingredient", ""), size=13),
+                    ft.Text("전체 성분", size=14, weight=ft.FontWeight.BOLD),
+                    ft.Text(product.get("ingredients_text", "성분 정보 없음"), size=13),
+
+                    ft.Row(
+                        alignment=ft.MainAxisAlignment.SPACE_EVENLY,
+                        controls=[
+                            ft.ElevatedButton(
+                                "수정",
+                                on_click=on_edit,
+                                style=ft.ButtonStyle(
+                                    bgcolor=ft.Colors.BLUE,
+                                    color=ft.Colors.WHITE,
+                                    padding=ft.Padding(30, 10, 30, 10),
+                                    shape=ft.RoundedRectangleBorder(radius=10)
+                                )
+                            ),
+                            ft.ElevatedButton(
+                                "삭제",
+                                on_click=on_delete,
+                                style=ft.ButtonStyle(
+                                    bgcolor=ft.Colors.RED,
+                                    color=ft.Colors.WHITE,
+                                    padding=ft.Padding(30, 10, 30, 10),
+                                    shape=ft.RoundedRectangleBorder(radius=10)
+                                )
+                            )
+                        ]
+                    ),
+
+                    ft.Row(
+                        alignment=ft.MainAxisAlignment.CENTER,
+                        controls=[
+                            ft.ElevatedButton(
+                                text="닫기",
+                                on_click=lambda e: (page.overlay.clear(), page.go(page.route, replace=True)),
+                                style=ft.ButtonStyle(
+                                    bgcolor=ft.Colors.GREEN,
+                                    color=ft.Colors.WHITE,
+                                    padding=ft.Padding(40, 10, 40, 10),
+                                    shape=ft.RoundedRectangleBorder(radius=10)
+                                )
+                            )
+                        ]
+                    )
+                ]
+            )
+        )
+    )
+
+    page.overlay.clear()
+    page.overlay.append(popup)
+    page.update()
+
+
+def confirm_delete_product(page: ft.Page, product_id: int):
+    def delete_action(e):
+        try:
+            with httpx.Client() as client:
+                res = client.post(
+                    f"{BASE_URL}/api/product/delete",
+                    json={"product_id": product_id},
+                    headers={"Authorization": f"Bearer {app_state.access_token}"}
+                )
+                if res.status_code == 200:
+                    print("✅ 삭제 성공")
+                    page.dialog.open = False
+                    page.update()
+                    page.go("/productmanagement", replace=True)
+                else:
+                    print("❌ 삭제 실패:", res.status_code, res.text)
+        except Exception as ex:
+            print("❌ 예외 발생:", ex)
+        page.update()
+
+    def cancel_action(e):
+        dialog.open = False
+        page.update()
+
+    print(f"[DEBUG] 삭제 확인 팝업 호출 - product_id: {product_id}")
+
+    dialog = ft.AlertDialog(
+        modal=True,
+        title=ft.Text("정말 삭제하시겠습니까?"),
+        content=ft.Text("이 작업은 되돌릴 수 없습니다."),
+        actions=[
+            ft.TextButton("취소", on_click=cancel_action),
+            ft.TextButton("삭제", on_click=delete_action),
+        ],
+        actions_alignment=ft.MainAxisAlignment.END,
+    )
+
+    # 💡 기존 overlay 제거 후 팝업 등록
+    page.overlay.clear()
+
+    # ✅ 핵심 수정: show_dialog() 사용
+    page.show_dialog(dialog)

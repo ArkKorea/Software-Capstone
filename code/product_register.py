@@ -8,7 +8,17 @@ from nav_bar import nav_bar
 def get_auth_headers():
     return {"Authorization": f"Bearer {app_state.access_token}"}
 
-def product_register_screen(page: ft.Page):
+def step_text(step, desc):
+    return ft.Row(
+        controls=[
+            ft.Text(step, size=16, color=ft.Colors.GREEN, weight=ft.FontWeight.BOLD),
+            ft.Text(f" {desc}", size=16, color=ft.Colors.BLACK)
+        ]
+    )
+
+def product_register_screen(page: ft.Page, mode="create", product_data=None):
+    is_edit = mode == "edit"
+
     allergy_items = [
         ("새우", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image//home/myallergy/home_myallergy_shrimp.png"),
         ("게", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image//home/myallergy/home_myallergy_crab.png"),
@@ -31,14 +41,14 @@ def product_register_screen(page: ft.Page):
         ("아황산류", "https://raw.githubusercontent.com/ArkKorea/Software-Capstone/ui/image//home/myallergy/home_myallergy_sulfurousacid.png"),
     ]
 
-    selected_allergies = set()
-    file_path = ft.Text()
+    selected_allergies = set(product_data.get("allergen_hit", [])) if is_edit and product_data else set()
+    file_path = ft.Text("현재 이미지 유지됩니다" if is_edit else "")
     uploaded_file = None
 
     def build_allergy_chip(label, img_src):
-        selected = False
+        selected = label in selected_allergies
         container = ft.Container(
-            bgcolor=ft.Colors.LIGHT_GREEN_100,
+            bgcolor=ft.Colors.GREEN_300 if selected else ft.Colors.LIGHT_GREEN_100,
             border_radius=12,
             padding=6,
             height=80,
@@ -91,9 +101,9 @@ def product_register_screen(page: ft.Page):
 
     file_picker.on_result = handle_file_result
 
-    name_field = ft.TextField(label="제품명", border_radius=10, filled=True, fill_color=ft.Colors.GREY_100, dense=True)
-    supplier_field = ft.TextField(label="공급자명", border_radius=10, filled=True, fill_color=ft.Colors.GREY_100, dense=True)
-    ingredient_field = ft.TextField(label="전체 성분", multiline=True, min_lines=3, border_radius=10, filled=True, fill_color=ft.Colors.GREY_100, dense=True)
+    name_field = ft.TextField(value=product_data.get("name", "") if is_edit else "", label="제품명", border_radius=10, filled=True, fill_color=ft.Colors.GREY_100, dense=True)
+    supplier_field = ft.TextField(value=product_data.get("supplier_name", "") if is_edit else "", label="공급자명", border_radius=10, filled=True, fill_color=ft.Colors.GREY_100, dense=True)
+    ingredient_field = ft.TextField(value=product_data.get("ingredient", "") if is_edit else "", label="전체 성분", multiline=True, min_lines=3, border_radius=10, filled=True, fill_color=ft.Colors.GREY_100, dense=True)
 
     name_error = ft.Text("", color=ft.Colors.RED)
     supplier_error = ft.Text("", color=ft.Colors.RED)
@@ -102,9 +112,7 @@ def product_register_screen(page: ft.Page):
     file_error = ft.Text("", color=ft.Colors.RED)
 
     def validate_and_save(e):
-        print("🟢 저장 버튼 클릭됨")
         valid = True
-
         if not name_field.value:
             name_error.value = "필수 체크 항목입니다."
             valid = False
@@ -129,81 +137,64 @@ def product_register_screen(page: ft.Page):
         else:
             ingredient_error.value = ""
 
-        if not uploaded_file:
+        image_base64 = None
+        if uploaded_file:
+            try:
+                with open(uploaded_file.path, "rb") as f:
+                    raw_bytes = f.read()
+                    image_base64 = base64.b64encode(raw_bytes).decode("utf-8")
+            except Exception as err:
+                file_error.value = f"이미지 인코딩 실패: {err}"
+                file_error.update()
+                return
+        elif not is_edit:
             file_error.value = "필수 체크 항목입니다."
-            print("🔴 파일이 업로드되지 않았습니다.")
-            valid = False
-        else:
-            file_error.value = f"✅ 파일 선택됨: {uploaded_file.path}"
+            file_error.update()
+            return
 
         for msg in [name_error, supplier_error, allergy_error, ingredient_error, file_error]:
             msg.update()
 
         if not valid:
-            print("🔴 유효성 검사 실패. 저장 중단.")
-            return
-
-        try:
-            print(f"📂 파일 읽기 시작: {uploaded_file.path}")
-            with open(uploaded_file.path, "rb") as f:
-                raw_bytes = f.read()
-                print(f"📦 파일 크기: {len(raw_bytes)} bytes")
-                image_base64 = base64.b64encode(raw_bytes).decode("utf-8")
-                print("✅ base64 인코딩 완료")
-        except Exception as err:
-            file_error.value = f"이미지 인코딩 실패: {err}"
-            file_error.update()
-            print(f"❌ 파일 인코딩 실패: {err}")
             return
 
         payload = {
             "name": name_field.value,
             "ingredient": ingredient_field.value,
-            "image_base64": image_base64,
             "allergies": list(selected_allergies)
         }
+        if image_base64:
+            payload["image_base64"] = image_base64
+        if is_edit:
+            payload["product_id"] = product_data["product_id"]
 
-        print("📤 서버에 전송할 데이터:")
-        print(payload)
+        url = f"{BASE_URL}/api/product/update" if is_edit else f"{BASE_URL}/api/product/create"
 
         try:
             with httpx.Client() as client:
-                print(f"🌐 요청 시작: {BASE_URL}/api/product/create")
-                res = client.post(f"{BASE_URL}/api/product/create", json=payload, headers=get_auth_headers())
-                print(f"🟢 서버 응답 코드: {res.status_code}")
+                res = client.post(url, json=payload, headers=get_auth_headers())
                 if res.status_code == 200:
-                    print("✅ 등록 성공. 성공 화면으로 이동합니다.")
-                    product_id = res.json()["product_id"]
-                    page.go(f"/productregistersuccess?id={product_id}")
+                    product_id = res.json().get("product_id")
+                    page.go("/productmanagement") if is_edit else page.go(f"/productregistersuccess?id={product_id}")
                 else:
-                    print("❌ 등록 실패. 응답 내용:", res.text)
                     file_error.value = f"등록 실패: {res.json()}"
                     file_error.update()
         except Exception as err:
-            print(f"❌ 서버 요청 중 오류 발생: {err}")
             file_error.value = f"요청 실패: {err}"
             file_error.update()
-
 
     return ft.View(
         "/productregister",
         controls=[
             ft.AppBar(
-                title=ft.Text("상 품   등 록", size=22, weight=ft.FontWeight.BOLD),
+                title=ft.Text("상 품 수 정" if is_edit else "상 품 등 록", size=22, weight=ft.FontWeight.BOLD),
                 center_title=True,
                 bgcolor=ft.Colors.WHITE,
-                leading=ft.IconButton(
-                    icon=ft.Icons.ARROW_BACK,
-                    on_click=lambda _: page.go("/productmanagement")
-                ),
+                leading=ft.IconButton(icon=ft.Icons.ARROW_BACK, on_click=lambda _: page.go("/productmanagement")),
                 actions=[
                     ft.Container(
                         margin=ft.Margin(left=0, top=0, right=10, bottom=0),
-                        content=ft.TextButton(
-                            "저장",
-                            style=ft.ButtonStyle(bgcolor=ft.Colors.GREEN, color=ft.Colors.WHITE),
-                            on_click=validate_and_save
-                        )
+                        content=ft.TextButton("저장", style=ft.ButtonStyle(bgcolor=ft.Colors.GREEN, color=ft.Colors.WHITE), on_click=validate_and_save)
                     )
                 ]
             ),
@@ -238,13 +229,5 @@ def product_register_screen(page: ft.Page):
                     nav_bar(page, current_route="/productregister")
                 ]
             )
-        ]
-    )
-
-def step_text(step, desc):
-    return ft.Row(
-        controls=[
-            ft.Text(step, size=16, color=ft.Colors.GREEN, weight=ft.FontWeight.BOLD),
-            ft.Text(f" {desc}", size=16, color=ft.Colors.BLACK)
         ]
     )

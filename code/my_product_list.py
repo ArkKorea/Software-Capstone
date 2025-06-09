@@ -4,6 +4,7 @@ import app_state
 from config import BASE_URL
 from nav_bar import nav_bar
 from card_renderer import create_product_card
+from popup_manager import product_manage_popup  # ✅ 관리 팝업 추가
 
 def get_auth_headers():
     return {"Authorization": f"Bearer " + app_state.access_token}
@@ -32,7 +33,12 @@ def my_product_list_screen(page: ft.Page):
             )
         else:
             for item in items:
-                list_ref.current.controls.append(create_product_card(item))
+                card = create_product_card(item)
+
+                # ✅ 클릭 동작을 "관리용 팝업"으로 덮어씀
+                card.on_click = lambda e, i=item: product_manage_popup(page, i)
+
+                list_ref.current.controls.append(card)
         page.update()
 
     view = ft.View(
@@ -67,5 +73,7 @@ def my_product_list_screen(page: ft.Page):
         ]
     )
 
+    # ✅ 목록 불러오기 시작
     on_load()
+
     return view
