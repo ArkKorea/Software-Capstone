@@ -9,7 +9,7 @@ FALLBACK_URL = f"https://play.google.com/store/apps/details?id={PACKAGE_NAME}"
 @router.get("/route-to-app")
 def route_to_app(type: str, id: int, request: Request):
     user_agent = request.headers.get("user-agent", "").lower()
-    print(user_agent)
+    
     if type not in ("product", "bundle", "supplier"):
         raise HTTPException(status_code=400, detail="유효하지 않은 type")
 
