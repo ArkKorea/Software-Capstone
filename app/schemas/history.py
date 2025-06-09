@@ -3,6 +3,7 @@ from typing import Optional, Literal, Union, List
 from datetime import datetime
 from app.schemas.product import ProductResponse
 from app.schemas.search import Store, Bundle
+from app.schemas.supplier import SupplierDetailResponse
 
 class ViewLogItem(BaseModel):
     type: Literal["food", "bundle", "supplier"]
@@ -17,7 +18,7 @@ class ViewLogResponse(BaseModel):
 class HistoryItem(BaseModel):
     type: Literal["food", "bundle", "supplier"]
     viewed_at: datetime
-    data: Union[ProductResponse, Bundle, Store]
+    data: Union[ProductResponse, Bundle, SupplierDetailResponse]
 
 class UnifiedHistoryResponse(BaseModel):
     history: List[HistoryItem]

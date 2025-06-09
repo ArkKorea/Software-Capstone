@@ -30,4 +30,4 @@ class SupplierDetailResponse(BaseModel):
     products: List[ProductResponse]
     bundles: List[BundleSummary]  # 이름, id, 이미지만
     is_favorite: bool
-
+    address: str | None = None

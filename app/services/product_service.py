@@ -7,7 +7,6 @@ from app.models.user import User
 
 from app.crud.product import *
 from app.schemas.product import ProductResponse, BundleResponse, ProductCreateResponse, ProductUpdate, ProductDelete
-from app.schemas.supplier import SupplierDetailResponse
 from app.models.food import Food
 from app.models.user import User
 from app.models.food_allergens import FoodAllergen

@@ -128,5 +128,6 @@ def get_supplier_detail_service(db: Session, supplier_id: int, user: User) -> Su
         image_url=supplier.image_url or "",
         products=products,
         bundles=bundles,
-        is_favorite=is_favorite
+        is_favorite=is_favorite,
+        address=supplier.address
     )
