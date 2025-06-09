@@ -3,7 +3,7 @@ from fastapi.responses import RedirectResponse
 
 router = APIRouter()
 
-PACKAGE_NAME = ""  # 앱 패키지 이름
+PACKAGE_NAME = "com.flet.capstone_team"  # 앱 패키지 이름
 FALLBACK_URL = f"https://play.google.com/store/apps/details?id={PACKAGE_NAME}"
 
 @router.get("/route-to-app")
