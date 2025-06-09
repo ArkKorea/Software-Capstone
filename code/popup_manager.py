@@ -1,7 +1,22 @@
 import flet as ft
 from app_state import access_token
+import httpx
+from config import BASE_URL
+import app_state
+
+def record_history(item_type: str, item_id: int):
+    try:
+        with httpx.Client(base_url=BASE_URL) as client:
+            client.post(
+                "/api/history/add",
+                headers={"Authorization": f"Bearer {app_state.access_token}"},
+                json={"type": item_type, "target_id": item_id}
+            )
+    except Exception as e:
+        print(f"[ERROR] history 기록 실패: {e}")
 
 def product_detail_popup(page: ft.Page, product: dict):
+    record_history("food" if product.get("bundle_id") is None else "bundle", product["product_id" if product.get("bundle_id") is None else "bundle_id"])
     allergens = product.get("allergens_hit") or product.get("allergen_hit") or []
     safe_allergens = product.get("allergens_safe") or product.get("allergen_safe") or []
     is_fav = product.get("is_favorite", False)
@@ -117,6 +132,7 @@ def show_all_products_popup(page: ft.Page, products: list):
 
 
 def store_detail_popup(page: ft.Page, store_info: dict, products: list, show_all_button: bool = False):
+    record_history("supplier", store_info["store_id"])
     def build_product_list():
         items = [
             ft.Text(f"- {p['name']}", size=12, color=ft.Colors.GREY_700)
