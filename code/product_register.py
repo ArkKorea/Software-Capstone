@@ -161,7 +161,8 @@ def product_register_screen(page: ft.Page, mode="create", product_data=None):
         payload = {
             "name": name_field.value,
             "ingredient": ingredient_field.value,
-            "allergies": list(selected_allergies)
+            "allergies": list(selected_allergies),
+            "supplier_name": supplier_field.value
         }
         if image_base64:
             payload["image_base64"] = image_base64
