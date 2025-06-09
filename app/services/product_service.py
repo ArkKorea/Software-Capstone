@@ -10,6 +10,7 @@ from app.schemas.product import ProductResponse, BundleResponse, ProductCreateRe
 from app.models.food import Food
 from app.models.user import User
 from app.models.food_allergens import FoodAllergen
+from app.models.food_bundle_item import FoodBundleItem
 from app.models.allergen import Allergen
 from fastapi import HTTPException
 from fastapi.responses import RedirectResponse
@@ -121,7 +122,7 @@ def get_my_products_service(db: Session, user: User) -> list[ProductResponse]:
             allergen_safe=[],
             is_favorite=False,
             supplier_id=user.supplier_id,
-            supplier_name = user.name if user.name else ""
+            supplier_name = food.supplier.name
         ))
     return result
 
@@ -154,8 +155,8 @@ def update_product_service(db: Session, data: ProductUpdate, user: User):
 
 # 내 제품 삭제
 def delete_product_service(db: Session, data: ProductDelete, user: User):
-    if user.role != "supplier" or not user.supplier_id:
-        raise HTTPException(status_code=403, detail="삭제 권한이 없습니다.")
+    # if user.role != "supplier" or not user.supplier_id:
+    #     raise HTTPException(status_code=403, detail="삭제 권한이 없습니다.")
 
     product = db.query(Food).filter(
         Food.id == data.product_id,
@@ -164,7 +165,8 @@ def delete_product_service(db: Session, data: ProductDelete, user: User):
 
     if not product:
         raise HTTPException(status_code=404, detail="해당 상품을 찾을 수 없습니다.")
-
+    
+    db.query(FoodBundleItem).filter(FoodBundleItem.food_id == product.id).delete()
     db.delete(product)
     db.commit()
 
