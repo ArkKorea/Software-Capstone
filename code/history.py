@@ -5,6 +5,7 @@ from datetime import datetime
 from config import BASE_URL
 from nav_bar import nav_bar
 from card_renderer import create_product_card, create_store_card
+from popup_manager import product_detail_popup, store_detail_popup
 
 def get_auth_headers():
     return {"Authorization": f"Bearer {app_state.access_token}"}
@@ -28,23 +29,41 @@ def format_time(dt):
         print("시간 포맷 에러:", e)
         return str(dt)
 
-def render_history_item(item):
+def render_history_item(item, page: ft.Page):
     item_type = item.get("type")
     viewed_at = item.get("viewed_at")
     data = item.get("data", {})
 
-    # viewed_at 표시용 텍스트
     viewed_text = ft.Text(f"열람 시각: {format_time(viewed_at)}", size=12, color=ft.Colors.GREY)
 
-    # 각각 타입에 맞는 카드 구성
     if item_type == "food" or item_type == "bundle":
         card = create_product_card(data)
+        card.on_click = lambda e: product_detail_popup(page, data)
+
     elif item_type == "supplier":
+        # 👉 추가적으로 products를 받아와야 함
+        def on_click(e):
+            products = []
+            try:
+                with httpx.Client(base_url=BASE_URL) as client:
+                    res = client.post(
+                        "/api/store/products",
+                        json={"store_id": data["store_id"]},
+                        headers=get_auth_headers()
+                    )
+                    if res.status_code == 200:
+                        products = res.json().get("products", [])
+            except Exception as e:
+                print("매장 제품 조회 실패:", e)
+
+            store_detail_popup(page, data, products)
+
         card = create_store_card(data)
+        card.on_click = on_click
+
     else:
         card = ft.Text("알 수 없는 항목", color=ft.Colors.RED)
 
-    # viewed_at 추가해서 감싸기
     return ft.Column(
         controls=[
             card,
@@ -53,6 +72,7 @@ def render_history_item(item):
             ft.Divider(height=1, color=ft.Colors.GREY_300)
         ]
     )
+
 
 def history_screen(page: ft.Page):
     history_items = fetch_history()
@@ -73,13 +93,13 @@ def history_screen(page: ft.Page):
                         content=ft.Text("최근 30개의 검색 기록", size=18, weight=ft.FontWeight.BOLD),
                         padding=ft.Padding(top=10, right=10, bottom=10, left=10)
                     ),
-                    ft.Column(
-                        controls=[
-                            render_history_item(item) for item in history_items
-                        ] if history_items else [
-                            ft.Text("기록이 없습니다.", color=ft.Colors.GREY, size=14)
-                        ],
-                        scroll=ft.ScrollMode.ALWAYS
+            ft.Column(
+                controls=[
+                    render_history_item(item, page) for item in history_items
+                ] if history_items else [
+                    ft.Text("기록이 없습니다.", color=ft.Colors.GREY, size=14)
+                ],
+                scroll=ft.ScrollMode.ALWAYS
                     ),
                     ft.Container(height=70)
                 ],
