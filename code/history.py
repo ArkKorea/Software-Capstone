@@ -4,6 +4,7 @@ import httpx
 from datetime import datetime
 from config import BASE_URL
 from nav_bar import nav_bar
+from card_renderer import create_product_card, create_store_card
 
 def get_auth_headers():
     return {"Authorization": f"Bearer {app_state.access_token}"}
@@ -13,37 +14,44 @@ def fetch_history():
         with httpx.Client() as client:
             res = client.get(f"{BASE_URL}/api/history", headers=get_auth_headers())
             if res.status_code == 200:
-                return res.json().get("products", [])
+                return res.json().get("history", [])  # ✅ 수정된 응답 필드명
     except Exception as e:
         print("검색 기록 요청 실패:", e)
     return []
 
-def format_time(dt_str):
+def format_time(dt):
     try:
-        dt = datetime.fromisoformat(dt_str)
+        if isinstance(dt, str):
+            dt = datetime.fromisoformat(dt)
         return dt.strftime("%Y-%m-%d %H:%M")
-    except:
-        return dt_str
+    except Exception as e:
+        print("시간 포맷 에러:", e)
+        return str(dt)
 
 def render_history_item(item):
-    return ft.Container(
-        padding=10,
-        bgcolor=ft.Colors.WHITE,
-        margin=ft.margin.only(bottom=10),
-        border_radius=10,
-        content=ft.Row(
-            controls=[
-                ft.Image(src=item.get("image_url", ""), width=60, height=60, fit=ft.ImageFit.COVER),
-                ft.Container(width=10),
-                ft.Column(
-                    controls=[
-                        ft.Text(item["name"], size=16, weight="bold"),
-                        ft.Text(f"열람 시각: {format_time(item['viewed_at'])}", size=12, color=ft.Colors.GREY)
-                    ],
-                    alignment=ft.MainAxisAlignment.CENTER
-                )
-            ]
-        )
+    item_type = item.get("type")
+    viewed_at = item.get("viewed_at")
+    data = item.get("data", {})  # ✅ 진짜 카드 정보는 여기에 있음
+
+    # viewed_at 표시용 텍스트
+    viewed_text = ft.Text(f"열람 시각: {format_time(viewed_at)}", size=12, color=ft.Colors.GREY)
+
+    # 각각 타입에 맞는 카드 구성
+    if item_type == "food" or item_type == "bundle":
+        card = create_product_card(data)
+    elif item_type == "supplier":
+        card = create_store_card(data)
+    else:
+        card = ft.Text("알 수 없는 항목", color=ft.Colors.RED)
+
+    # viewed_at 추가해서 감싸기
+    return ft.Column(
+        controls=[
+            card,
+            ft.Container(height=4),
+            viewed_text,
+            ft.Divider(height=1, color=ft.Colors.GREY_300)
+        ]
     )
 
 def history_screen(page: ft.Page):
