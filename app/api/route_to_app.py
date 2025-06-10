@@ -7,13 +7,14 @@ PACKAGE_NAME = "com.flet.capstone_team"  # 앱 패키지 이름
 FALLBACK_URL = f"https://play.google.com/store/apps/details?id={PACKAGE_NAME}"
 
 @router.get("/route-to-app")
-def route_to_app(type: str, id: int, request: Request):
+def route_to_app(type: str, name: str, request: Request):
     user_agent = request.headers.get("user-agent", "").lower()
-    
+    print(name)
     if type not in ("product", "bundle", "supplier"):
         raise HTTPException(status_code=400, detail="유효하지 않은 type")
 
-    scheme_path = f"{type}/{id}" 
+    #프론트 검색 결과로 바로 이동하기 위한 형태
+    scheme_path = f"/searchview?type={type}&name={name}" 
 
     if "android" in user_agent:
         intent_url = (
