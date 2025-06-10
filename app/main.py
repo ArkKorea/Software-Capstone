@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api import allergen, auth, product, search, favorite, symptom, meal, detail, bundle, route_to_app, history
+from app.api import allergen, auth, product, search, favorite, symptom, meal, detail, bundle, route_to_app, history, api_ocr
 
 from app.models.base import Base
 
@@ -33,4 +33,4 @@ app.include_router(bundle.router, prefix="/api/bundles", tags=["Bundles"])
 
 app.include_router(history.router, prefix="/api", tags=["History"])
 app.include_router(route_to_app.router, prefix="", tags=["Route_to_app"])
-
+app.include_router(api_ocr.router, prefix="/api", tags=["Ocr"])
