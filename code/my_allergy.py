@@ -142,7 +142,7 @@ def my_allergy_screen(page: ft.Page):
                     ft.Container(
                         content=ft.Column(
                             controls=[
-                                ft.Text("홍  길  동  님", size=18, text_align=ft.TextAlign.CENTER),
+                                ft.Text(page.client_storage.get("display_name"), size=18, text_align=ft.TextAlign.CENTER),
                                 allergy_count_text,
                             ],
                             alignment=ft.MainAxisAlignment.CENTER,
