@@ -77,7 +77,7 @@ def login_screen(page: ft.Page):
                 data = response.json()
                 app_state.access_token = data["access_token"]
                 app_state.user = data["user"]
-                page.client_storage.set("display_name", app_state.user.get("email"))
+                page.client_storage.set("display_name", app_state.user.get("email").split('@')[0])
                 page.go("/home")
             else:
                 try:
