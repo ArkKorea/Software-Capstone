@@ -176,7 +176,7 @@ def product_register_screen(page: ft.Page, mode="create", product_data=None):
                 res = client.post(url, json=payload, headers=get_auth_headers())
                 if res.status_code == 200:
                     product_id = res.json().get("product_id")
-                    page.go("/productmanagement") if is_edit else page.go(f"/productregistersuccess?id={product_id}")
+                    page.go("/productmanagement") if is_edit else page.go(f"/productregistersuccess?name={name_field.value}")
                 else:
                     file_error.value = f"등록 실패: {res.json()}"
                     file_error.update()

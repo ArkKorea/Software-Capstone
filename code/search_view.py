@@ -4,6 +4,7 @@ import httpx
 from config import BASE_URL
 from nav_bar import nav_bar
 from popup_manager import store_detail_popup, product_detail_popup
+from urllib.parse import urlparse, parse_qs
 
 def search_view_screen(page: ft.Page):
     search_filter = ft.Ref[str]()
@@ -220,6 +221,15 @@ def search_view_screen(page: ft.Page):
         border_radius=0,
         on_submit=search_enter
     )
+
+    qs = parse_qs(urlparse(page.route).query)
+    if qs:
+        data_type = qs.get("type", [None])[0]
+        data_keyword = qs.get("name", [""])[0]
+        search_field.value = data_keyword
+        category = data_type
+        category = "제품명" if category == "product" else "매장명"
+        search_enter()
 
     search_field.value = app_state.search_keyword or ""
     search_filter.current = app_state.search_category

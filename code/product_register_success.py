@@ -3,14 +3,21 @@ from urllib.parse import parse_qs, urlparse
 from nav_bar import nav_bar
 from config import BASE_URL
 from qr_maker import qr_code_maker
+import requests
 
 def product_register_success_screen(page: ft.Page):
     qs = parse_qs(urlparse(page.route).query)
-    product_id = qs.get("id", [None])[0]
-    print("저장에 성공한 상품의 id는 " + product_id + "입니다.")
-    qr_code_url = qr_code_maker("product", product_id)
+    product_name = qs.get("name", [None])[0]
+    print("저장에 성공한 상품의 id는 " + product_name + "입니다.")
+    qr_code_url = qr_code_maker("product", product_name)
 
     def save_qr_image(e):
+        save_path = f"product_{product_name}.png"
+        response = requests.get(qr_code_url)
+        if response.status_code == 200:
+            with open(save_path , "wb") as f:
+                f.write(response.content)
+            print("저장완료")
         print("QR 이미지 저장하기 클릭")
 
     def share_qr(e):
@@ -20,7 +27,7 @@ def product_register_success_screen(page: ft.Page):
         page.go("/productmanagement")  # 원래 화면 경로로 바꿔줘
 
     return ft.View(
-        route=f"/productregistersuccess?id={product_id}",
+        route=f"/productregistersuccess?id={product_name}",
         controls=[
             # AppBar 추가
             ft.AppBar(
